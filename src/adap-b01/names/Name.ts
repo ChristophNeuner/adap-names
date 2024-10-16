@@ -7,35 +7,57 @@ export class Name {
     private delimiter: string = this.DEFAULT_DELIMITER;
 
     constructor(other: string[], delimiter?: string) {
-        throw new Error("needs implementation");
+        this.components = other;
+        if (delimiter != undefined) {
+            this.delimiter = delimiter;
+        }
     }
 
     public asNameString(delimiter: string = this.delimiter): string {
-        throw new Error("needs implementation");
+        let result: string = "";
+        for (let i = 0; i < this.components.length; i++) {
+            if (i > 0 && i < this.components.length) {
+                result += delimiter;
+            }
+            result += this.components[i];
+        }
+        return result;
     }
 
     public getComponent(i: number): string {
-        throw new Error("needs implementation");
+        if(i < 0 || i >= this.components.length) {
+            throw new Error("Index out of bounds");
+        }
+        return this.components[i];
     }
 
     public setComponent(i: number, c: string): void {
-        throw new Error("needs implementation");
+        if(i < 0 || i >= this.components.length) {
+            throw new Error("Index out of bounds");
+        }
+        this.components[i] = c;
     }
 
     public getNoComponents(): number {
-        throw new Error("needs implementation");
+        return this.components.length;
     }
 
     public insert(i: number, c: string): void {
-        throw new Error("needs implementation");
+        if(i < 0 || i >= this.components.length) {
+            throw new Error("Index out of bounds");
+        }
+        this.components.splice(i, 0, c);
     }
 
     public append(c: string): void {
-        throw new Error("needs implementation");
+        this.components.push(c);
     }
 
     public remove(i: number): void {
-        throw new Error("needs implementation");
+        if(i < 0 || i >= this.components.length) {
+            throw new Error("Index out of bounds");
+        }
+        this.components.splice(i, 1);
     }
 
 }
