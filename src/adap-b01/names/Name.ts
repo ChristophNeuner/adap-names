@@ -6,6 +6,7 @@ export class Name {
     private components: string[] = [];
     private delimiter: string = this.DEFAULT_DELIMITER;
 
+    // @methodtype constructor or initialization-method
     constructor(other: string[], delimiter?: string) {
         this.components = other;
         if (delimiter != undefined) {
@@ -13,17 +14,20 @@ export class Name {
         }
     }
 
+    // @methodtype conversion-method
     public asNameString(delimiter: string = this.delimiter): string {
-        let result: string = "";
+        /* let result: string = "";
         for (let i = 0; i < this.components.length; i++) {
             if (i > 0 && i < this.components.length) {
                 result += delimiter;
             }
             result += this.components[i];
         }
-        return result;
+        return result; */
+        return this.components.join(delimiter);
     }
 
+    // @methodtype get-method
     public getComponent(i: number): string {
         if(i < 0 || i >= this.components.length) {
             throw new Error("Index out of bounds");
@@ -31,6 +35,7 @@ export class Name {
         return this.components[i];
     }
 
+    // @methodtype set-method
     public setComponent(i: number, c: string): void {
         if(i < 0 || i >= this.components.length) {
             throw new Error("Index out of bounds");
@@ -38,10 +43,12 @@ export class Name {
         this.components[i] = c;
     }
 
+    // @methodtype get-method
     public getNoComponents(): number {
         return this.components.length;
     }
 
+    // @methodtype command-method
     public insert(i: number, c: string): void {
         if(i < 0 || i >= this.components.length) {
             throw new Error("Index out of bounds");
@@ -49,15 +56,16 @@ export class Name {
         this.components.splice(i, 0, c);
     }
 
+    // @methodtype command-method
     public append(c: string): void {
         this.components.push(c);
     }
 
+    // @methodtype command-method
     public remove(i: number): void {
         if(i < 0 || i >= this.components.length) {
             throw new Error("Index out of bounds");
         }
         this.components.splice(i, 1);
     }
-
 }
