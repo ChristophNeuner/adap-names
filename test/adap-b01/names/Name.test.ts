@@ -37,6 +37,14 @@ describe("Delimiter function tests", () => {
   });
 });
 
+describe("Delimiter undefined", () => {
+  it("test undefined delimiter", () => {
+    let n: Name = new Name(["oss", "fau", "de"], undefined);
+    n.insert(1, "cs");
+    expect(n.asNameString()).toBe("oss.cs.fau.de");
+  });
+});
+
 describe("Escape character extravaganza", () => {
   it("test escape and delimiter boundary conditions", () => {
     // Original name string = "oss.cs.fau.de"
