@@ -76,3 +76,19 @@ describe("Escape character", () => {
     expect(n.asNameString()).toBe("fooo.oss\\.cs\\.fau\\.de");
   });
 });
+
+describe("Escape character non default delimiter", () => {
+  it("test escape character", () => {
+    let n: Name = new Name(["fooo", "oss.cs.fau.de"], '#');
+    console.log(n.asNameString());
+    expect(n.asNameString()).toBe("fooo#oss.cs.fau.de");
+  });
+});
+
+describe("Escape character == delimiter", () => {
+  it("test escape character", () => {
+    let n: Name = new Name(["fooo", "oss.cs.fau.de"], '\\');
+    console.log(n.asNameString());
+    expect(n.asNameString()).toBe("fooo\\oss.cs.fau.de");
+  });
+});
