@@ -6,6 +6,7 @@ export class Name {
     private components: string[] = [];
     private delimiter: string = this.DEFAULT_DELIMITER;
 
+    // @methodtype constructor or initialization-method
     constructor(other: string[], delimiter?: string) {
         this.components = other;
         if (delimiter != undefined) {
@@ -15,15 +16,9 @@ export class Name {
 
     // @methodtype conversion-method
     public asNameString(delimiter: string = this.delimiter): string {
-        /* let result: string = "";
-        for (let i = 0; i < this.components.length; i++) {
-            if (i > 0 && i < this.components.length) {
-                result += delimiter;
-            }
-            result += this.components[i];
-        }
-        return result; */
-        return this.components.join(delimiter);
+        return this.components
+            .map(component => component.replace(new RegExp(`\\${delimiter}`, 'g'), this.ESCAPE_CHARACTER + delimiter))
+            .join(delimiter);
     }
 
     // @methodtype get-method
