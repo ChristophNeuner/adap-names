@@ -92,3 +92,11 @@ describe("Escape character == delimiter", () => {
     expect(n.asNameString()).toBe("fooo\\oss.cs.fau.de");
   });
 });
+
+describe("delimiter == \\", () => {
+  it("test escape character", () => {
+    let n: Name = new Name(["fooo", "oss.cs\\fau.de"], '\\');
+    console.log(n.asNameString());
+    expect(n.asNameString()).toBe("fooo\\oss.cs\\\\fau.de");
+  });
+});
