@@ -9,7 +9,7 @@ export class Name {
     // @methodtype constructor or initialization-method
     constructor(other: string[], delimiter?: string) {
         this.components = other;
-        if (delimiter != undefined) {
+        if (delimiter !== undefined && delimiter !== null) {
             this.delimiter = delimiter;
         }
     }
