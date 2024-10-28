@@ -68,3 +68,11 @@ describe("input checking", () => {
     expect(() => n.remove(3)).toThrow("Index out of bounds");
   });
 });
+
+describe("Escape character", () => {
+  it("test escape character", () => {
+    let n: Name = new Name(["fooo", "oss.cs.fau.de"], '.');
+    console.log(n.asNameString());
+    expect(n.asNameString()).toBe("fooo.oss\\.cs\\.fau\\.de");
+  });
+});
