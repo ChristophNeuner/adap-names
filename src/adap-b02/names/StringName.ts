@@ -161,8 +161,16 @@ export class StringName implements Name {
         this.length--;
     }
 
+    //TODO: implement
+    // if the delimiters differ, concat shall return an error (siehe Studonkurs: 
+    // https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385173&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilRepositoryGUI)
     public concat(other: Name): void {
-        throw new Error("needs implementation");
+        if(other.getDelimiterCharacter() !== this.getDelimiterCharacter()){
+            throw new Error("Delimiters differ");
+        }
+        for(let i=0; i<other.getNoComponents(); i++){
+            this.append(other.getComponent(i));
+        }
     }
 
     public getIndices(): number[] {
