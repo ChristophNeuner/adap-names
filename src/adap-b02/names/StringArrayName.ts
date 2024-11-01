@@ -6,10 +6,10 @@ export class StringArrayName implements Name {
     protected delimiter: string = DEFAULT_DELIMITER;
 
     constructor(other: string[], delimiter?: string) {
-        this.components = other;
         if (delimiter !== undefined && delimiter !== null) {
             this.delimiter = delimiter;
         }
+        this.components = other; //components might contain escape characters
     }
 
     /**
@@ -18,7 +18,15 @@ export class StringArrayName implements Name {
      * Users can vary the delimiter character to be used
      */
     public asString(delimiter: string = this.delimiter): string {
-        return this.components.join(delimiter);
+        //remove escape chars
+        let result = "";
+        for(let i=0; i<this.components.length; i++){
+            result += this.removeEscapeCharactersBeforeDelimiters(this.components[i], this.delimiter);
+            if(i < this.components.length - 1){
+                result += delimiter;
+            }
+        }
+        return result;
     }
 
     /** 
@@ -27,9 +35,7 @@ export class StringArrayName implements Name {
      * The control characters in the data string are the default characters
      */
     public asDataString(): string {
-        return this.components
-            .map(component => component.replace(new RegExp(`\\${this.delimiter}`, 'g'), ESCAPE_CHARACTER + this.delimiter))
-            .join(this.delimiter);
+        return this.components.join(DEFAULT_DELIMITER);
     }
 
     public isEmpty(): boolean {
@@ -57,7 +63,7 @@ export class StringArrayName implements Name {
         if(this.isIndexOutOfBounds(i)) {
             throw new Error("Index out of bounds");
         }
-        this.components[i] = this.removeEscapeCharactersBeforeDelimiters(c, this.delimiter);
+        this.components[i] = c; //component might contain escape characters
     }
 
     /** Assumes that new Name component c is properly masked */
@@ -65,12 +71,12 @@ export class StringArrayName implements Name {
         if(this.isIndexOutOfBounds(i)) {
             throw new Error("Index out of bounds");
         }
-        this.components.splice(i, 0, this.removeEscapeCharactersBeforeDelimiters(c, this.delimiter));
+        this.components.splice(i, 0, c); //component might contain escape characters
     }
 
     /** Assumes that new Name component c is properly masked */
     public append(c: string): void {
-        this.components.push(this.removeEscapeCharactersBeforeDelimiters(c, this.delimiter));
+        this.components.push(c); //component might contain escape characters
     }
 
     public remove(i: number): void {
@@ -81,6 +87,8 @@ export class StringArrayName implements Name {
     }
 
     //TODO: implement
+    // if the delimiters differ, concat shall return an error (siehe Studonkurs: 
+    // https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385173&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilRepositoryGUI)
     public concat(other: Name): void {
         throw new Error("needs implementation");
     }
@@ -89,7 +97,12 @@ export class StringArrayName implements Name {
         return i < 0 || i >= this.getNoComponents();
     }
 
-    private removeEscapeCharactersBeforeDelimiters(s: string, delimiter:string): string {
-        return s.replace(new RegExp(`${ESCAPE_CHARACTER}(?=${delimiter})`, 'g'),'');
+    private removeEscapeCharactersBeforeDelimiters(s: string, delimiter: string): string {
+        for(let i=0; i<s.length-1; i++){
+            if(s[i] === ESCAPE_CHARACTER && s[i+1] === delimiter){
+                s = s.substring(0, i) + s.substring(i+1);
+            }
+        }
+        return s;
     }
 }
