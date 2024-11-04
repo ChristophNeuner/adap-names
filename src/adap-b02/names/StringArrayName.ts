@@ -6,6 +6,11 @@ export class StringArrayName implements Name {
     protected delimiter: string = DEFAULT_DELIMITER;
 
     constructor(other: string[], delimiter?: string) {
+        //Prof. Riehle: Ich denke, eine leeres string array zu uebergeben sollte nicht erlaubt sein (im Constructor).
+        //https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385940&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilrepositorygui
+        if(other === undefined || other === null || other.length === 0) {
+            throw new Error("Name must not be undefined, null or empty");
+        }
         if (delimiter !== undefined && delimiter !== null) {
             this.delimiter = delimiter;
         }
@@ -68,8 +73,12 @@ export class StringArrayName implements Name {
 
     /** Assumes that new Name component c is properly masked */
     public insert(i: number, c: string): void {
-        if(this.isIndexOutOfBounds(i)) {
+        //https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385950&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilrepositorygui
+        if(i<0 || i>this.getNoComponents()) {
             throw new Error("Index out of bounds");
+        }else if(i === this.getNoComponents()){
+            this.append(c);
+            return;
         }
         this.components.splice(i, 0, c); //component might contain escape characters
     }
