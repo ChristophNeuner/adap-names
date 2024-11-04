@@ -83,7 +83,7 @@ export class StringName implements Name {
     }
 
     public isEmpty(): boolean {
-        return this.name.length === 0;
+        return this.length === 0;
     }
 
     public getDelimiterCharacter(): string {
@@ -118,11 +118,10 @@ export class StringName implements Name {
 
     /** Assumes that new Name component c is properly masked */
     public insert(n: number, c: string): void {
-        if(n < 0 || n > this.length){
+        if(n < 0 || n > this.getNoComponents()){
             throw new Error("Index out of bounds");
-            //TODO maybe index > length should be allowed, then one would have to fill up with empty components
         }
-        else if(n === this.length){
+        else if(n === this.getNoComponents()){
             this.append(c);
         }else{
             let start = this.indices[n];
