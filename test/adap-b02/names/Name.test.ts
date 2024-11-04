@@ -100,6 +100,20 @@ describe("Basic StringName function tests", () => {
     expect(n.asString()).toBe("b.c");
     expect(n.getIndices()).toEqual([-1, 1]);
   });
+  it("test isEmpty", () => {
+    let n: StringName = new StringName("oss.cs.fau");
+    n.remove(2); 
+    n.remove(1);
+    n.remove(0);
+    expect(n.isEmpty()).toBe(true);
+    n.insert(0, "oss");
+    expect(n.isEmpty()).toBe(false);
+  });
+  it("test asDataString", () => {
+    let n: StringName = new StringName("oss.cs.fau");
+    n.append("foo\\.bar");
+    expect(n.asDataString()).toBe("oss.cs.fau.foo\\.bar");
+  });
 });
 
 describe("Basic StringArrayName function tests", () => {
@@ -127,11 +141,25 @@ describe("Basic StringArrayName function tests", () => {
     let n: Name = new StringArrayName(["oss\\.cs", "fau", "de"]);
     expect(n.asString("#")).toBe("oss.cs#fau#de");
   });
-  it("test concat", () => {
+  it("test concat two StringArrayNames", () => {
     let n1: Name = new StringArrayName(["oss\\.cs", "fau", "de"]);
     let n2: Name = new StringArrayName(["foo", "bar"]);
     n1.concat(n2);
     expect(n1.asString("#")).toBe("oss.cs#fau#de#foo#bar");
+  });
+  it("test isEmpty", () => {
+    let n: Name = new StringArrayName(["oss", "cs", "fau"]);
+    n.remove(2);
+    n.remove(1);
+    n.remove(0);
+    expect(n.isEmpty()).toBe(true);
+    n.insert(0, "oss");
+    expect(n.isEmpty()).toBe(false);
+  });
+  it("test asDataString", () => {
+    let n: Name = new StringArrayName(["oss", "cs", "fau"]);
+    n.append("foo\\.bar");
+    expect(n.asDataString()).toBe("oss.cs.fau.foo\\.bar");
   });
 });
 
@@ -150,5 +178,40 @@ describe("Escape character extravaganza", () => {
     expect(n.asString()).toBe("oss.cs.fau.de");
     n.append("people");
     expect(n.asString()).toBe("oss.cs.fau.de#people");
+  });
+});
+
+describe("concat between StringArrayName and StringName", () => {
+  it("test concat StringArrayName with StringName", () => {
+    let n1: Name = new StringArrayName(["oss\\.cs", "fau", "de"]);
+    let n2: Name = new StringName("foo.bar");
+    n1.concat(n2);
+    expect(n1.asString("#")).toBe("oss.cs#fau#de#foo#bar");
+  });
+});
+
+describe("edge cases StringName", () => {
+  it("test empty String", () => {
+    let n: Name = new StringName("");
+    expect(n.isEmpty()).toBe(true);
+    expect(n.asString()).toBe("");
+    expect(n.asDataString()).toBe("");
+    n.append("foo\\.bar");
+    expect(n.getNoComponents()).toBe(1);
+    expect(n.asDataString()).toBe("foo\\.bar");
+  });
+});
+
+describe("edge cases StringArrayName", () => {
+  it("test empty array", () => {
+    let n: Name = new StringArrayName(["oss"]);
+    n.remove(0);
+    expect(n.isEmpty()).toBe(true);
+    expect(n.getNoComponents()).toBe(0);
+    expect(n.asString()).toBe("");
+    expect(n.asDataString()).toBe("");
+    n.append("foo\\.bar");
+    expect(n.getNoComponents()).toBe(1);
+    expect(n.asDataString()).toBe("foo\\.bar");
   });
 });
