@@ -139,8 +139,14 @@ export class StringName implements Name {
 
     /** Assumes that new Name component c is properly masked */
     public append(c: string): void {
+        if(this.getNoComponents() === 0){
+            this.name = c;
+            this.indices.push(-1);
+            this.length++;
+            return;
+        }
+        this.indices.push(this.name.length);
         this.name += this.delimiter + c;
-        this.indices.push(this.name.length- c.length - 1);
         this.length++;
     }
 
