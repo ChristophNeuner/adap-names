@@ -1,4 +1,6 @@
 import { Name, DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "./Name";
+//import {StringArrayName} from "./StringArrayName";
+//import {StringName} from "./StringName";
 
 export abstract class AbstractName implements Name {
 
@@ -58,14 +60,20 @@ export abstract class AbstractName implements Name {
     }
 
     public clone(): Name {
-        const ClonedClass = this.constructor as { new (...args: any[]): AbstractName };
-        const clone = new ClonedClass(this.delimiter);
-        
-        for (let i = 0; i < this.getNoComponents(); i++) {
-            clone.append(this.getComponent(i));
+        /* const ClonedClass = this.constructor as { new (...args: any[]): AbstractName };
+        let clone: AbstractName;
+        if (this instanceof StringArrayName) {
+            clone = new ClonedClass([...this.components], this.delimiter);
+        } else if (this instanceof StringName) {
+            clone = new ClonedClass(this.toString(), this.delimiter);
+        } else {
+            throw new Error("Unsupported subclass for cloning");
         }
-    
-        return clone;
+        return clone; */
+
+        //return { ...this };
+
+        return JSON.parse(JSON.stringify(this));
     }
 
     public isEmpty(): boolean {
