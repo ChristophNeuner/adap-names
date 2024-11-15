@@ -95,7 +95,6 @@ export class StringArrayName implements Name {
         this.components.splice(i, 1);
     }
 
-    //TODO: implement
     // if the delimiters differ, concat shall return an error (siehe Studonkurs: 
     // https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385173&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilRepositoryGUI)
     public concat(other: Name): void {
