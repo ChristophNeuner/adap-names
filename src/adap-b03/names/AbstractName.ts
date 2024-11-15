@@ -104,4 +104,8 @@ export abstract class AbstractName implements Name {
         }
         return s;
     }
+
+    protected isIndexOutOfBounds(i: number): boolean {
+        return i < 0 || i >= this.getNoComponents();
+    }
 }

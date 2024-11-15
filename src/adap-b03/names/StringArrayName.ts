@@ -7,27 +7,58 @@ export class StringArrayName extends AbstractName {
 
     constructor(other: string[], delimiter?: string) {
         super();
-        throw new Error("needs implementation");
+        //Prof. Riehle: Ich denke, eine leeres string array zu uebergeben sollte nicht erlaubt sein (im Constructor).
+        //https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385940&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilrepositorygui
+        if(other === undefined || other === null || other.length === 0) {
+            throw new Error("Name must not be undefined, null or empty");
+        }
+        if (delimiter !== undefined && delimiter !== null) {
+            this.delimiter = delimiter;
+        }
+        this.components = other; //components might contain escape characters
     }
 
-    getNoComponents(): number {
-        throw new Error("needs implementation");
+    /** Returns number of components in Name instance */
+    public getNoComponents(): number {
+        return this.components.length;
     }
 
-    getComponent(i: number): string {
-        throw new Error("needs implementation");
-    }
-    setComponent(i: number, c: string) {
-        throw new Error("needs implementation");
+    public getComponent(i: number): string {
+        if(this.isIndexOutOfBounds(i)) {
+            throw new Error("Index out of bounds");
+        }
+        return this.components[i];
     }
 
-    insert(i: number, c: string) {
-        throw new Error("needs implementation");
+    /** Assumes that new Name component c is properly masked */
+    public setComponent(i: number, c: string): void {
+        if(this.isIndexOutOfBounds(i)) {
+            throw new Error("Index out of bounds");
+        }
+        this.components[i] = c; //component might contain escape characters
     }
-    append(c: string) {
-        throw new Error("needs implementation");
+
+    /** Assumes that new Name component c is properly masked */
+    public insert(i: number, c: string): void {
+        //https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385950&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilrepositorygui
+        if(i<0 || i>this.getNoComponents()) {
+            throw new Error("Index out of bounds");
+        }else if(i === this.getNoComponents()){
+            this.append(c);
+            return;
+        }
+        this.components.splice(i, 0, c); //component might contain escape characters
     }
-    remove(i: number) {
-        throw new Error("needs implementation");
+
+    /** Assumes that new Name component c is properly masked */
+    public append(c: string): void {
+        this.components.push(c); //component might contain escape characters
+    }
+
+    public remove(i: number): void {
+        if(this.isIndexOutOfBounds(i)) {
+            throw new Error("Index out of bounds");
+        }
+        this.components.splice(i, 1);
     }
 }
