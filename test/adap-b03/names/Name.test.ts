@@ -215,3 +215,42 @@ describe("edge cases StringArrayName", () => {
     expect(n.asDataString()).toBe("foo\\.bar");
   });
 });
+
+/* describe("clone", () => {
+  it("StringArrayName", () => {
+    let n: AbstractName = new StringArrayName(["oss", "cs", "fau"]);
+    let n_clone: AbstractName = n.clone();
+    expect(n.asDataString()).toBe(n_clone.asDataString());
+  });
+}); */
+
+describe("isEqual and getHashCode (Two equal objects must have the same hashcode (Lecture B01))", () => {
+  it("StringArrayName", () => {
+    let n: StringArrayName = new StringArrayName(["oss", "cs", "fau"]);
+    let n2: StringArrayName = new StringArrayName(["oss", "cs", "fau"]);
+    expect(n.isEqual(n2)).toBe(true);
+    expect(n.getHashCode()).toBe(n2.getHashCode());
+  });
+  it("StringName", () => {
+    let n: StringName = new StringName("oss.cs.fau.de", '#');
+    let n2: StringName = new StringName("oss.cs.fau.de");
+    expect(n.isEqual(n2)).toBe(true);
+    expect(n.getHashCode()).toBe(n2.getHashCode());
+  });
+  it("StringArrayName and StringName", () => {
+    let n: StringName = new StringName("oss.cs.fau", '#');
+    let n2: StringArrayName = new StringArrayName(["oss", "cs", "fau"], "+");
+    expect(n.isEqual(n2)).toBe(true);
+    expect(n.getHashCode()).toBe(n2.getHashCode());
+  });
+});
+
+describe("getHashCode", () => {
+  it("foo", () => {
+    let n: Name = new StringArrayName(["oss", "cs", "fau"]);
+    console.log(n.getHashCode());
+    let n2: StringName = new StringName("oss.cs.fau", '#');
+    console.log(n2.getHashCode());
+    expect(n.getHashCode()).toBe(n2.getHashCode());
+  });
+});
