@@ -1,6 +1,6 @@
 import { Name, DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "./Name";
-//import {StringArrayName} from "./StringArrayName";
-//import {StringName} from "./StringName";
+//import { StringArrayName } from "./StringArrayName";
+//import { StringName } from "./StringName";
 
 export abstract class AbstractName implements Name {
 
@@ -63,7 +63,11 @@ export abstract class AbstractName implements Name {
         /* const ClonedClass = this.constructor as { new (...args: any[]): AbstractName };
         let clone: AbstractName;
         if (this instanceof StringArrayName) {
-            clone = new ClonedClass([...this.components], this.delimiter);
+            let components: string[] = [];
+            for (let i = 0; i < this.getNoComponents(); i++) {
+                components.push(this.getComponent(i));
+            }
+            clone = new ClonedClass(components, this.delimiter);
         } else if (this instanceof StringName) {
             clone = new ClonedClass(this.toString(), this.delimiter);
         } else {
@@ -73,7 +77,27 @@ export abstract class AbstractName implements Name {
 
         //return { ...this };
 
-        return JSON.parse(JSON.stringify(this));
+        let clone = JSON.parse(JSON.stringify(this));
+        clone.delimiter = this.delimiter;
+        clone.asString = this.asString;
+        clone.toString = this.toString;
+        clone.asDataString = this.asDataString;
+        clone.isEqual = this.isEqual;
+        clone.getHashCode = this.getHashCode;
+        clone.clone = this.clone;
+        clone.isEmpty = this.isEmpty;
+        clone.getDelimiterCharacter = this.getDelimiterCharacter;
+        clone.getNoComponents = this.getNoComponents;
+        clone.getComponent = this.getComponent;
+        clone.setComponent = this.setComponent;
+        clone.insert = this.insert;
+        clone.append = this.append;
+        clone.remove = this.remove;
+        clone.concat = this.concat;
+        clone.removeEscapeCharactersBeforeDelimiters = this.removeEscapeCharactersBeforeDelimiters;
+        clone.isIndexOutOfBounds = this.isIndexOutOfBounds;
+
+        return clone;
     }
 
     public isEmpty(): boolean {
