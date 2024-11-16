@@ -4,6 +4,7 @@ import { Name } from "../../../src/adap-b03/names/Name";
 import { StringName } from "../../../src/adap-b03/names/StringName";
 import { StringArrayName } from "../../../src/adap-b03/names/StringArrayName";
 import exp from "constants";
+import { AbstractName } from "./AbstractName";
 
 describe("Basic StringName function tests", () => {
   it("test insert", () => {
@@ -216,13 +217,24 @@ describe("edge cases StringArrayName", () => {
   });
 });
 
-/* describe("clone", () => {
+describe("clone", () => {
   it("StringArrayName", () => {
-    let n: AbstractName = new StringArrayName(["oss", "cs", "fau"]);
-    let n_clone: AbstractName = n.clone();
+    let n: StringArrayName = new StringArrayName(["oss", "cs", "fau"]);
+    let n_clone: StringArrayName = n.clone();
+    expect(n.asDataString()).toBe(n_clone.asDataString());
+    n.remove(0);
+    n_clone.remove(0);
     expect(n.asDataString()).toBe(n_clone.asDataString());
   });
-}); */
+  it("StringName", () => {
+    let n: StringName = new StringName("oss.cs.fau.de", '#');
+    let n_clone: StringName = n.clone();
+    expect(n.asDataString()).toBe(n_clone.asDataString());
+    n.remove(0);
+    n_clone.remove(0);
+    expect(n.asDataString()).toBe(n_clone.asDataString());
+  });
+});
 
 describe("isEqual and getHashCode (Two equal objects must have the same hashcode (Lecture B01))", () => {
   it("StringArrayName", () => {
