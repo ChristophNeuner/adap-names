@@ -220,19 +220,25 @@ describe("edge cases StringArrayName", () => {
 describe("clone", () => {
   it("StringArrayName", () => {
     let n: StringArrayName = new StringArrayName(["oss", "cs", "fau"]);
-    let n_clone: StringArrayName = n.clone();
+    let n_clone: Name = n.clone();
     expect(n.asDataString()).toBe(n_clone.asDataString());
     n.remove(0);
     n_clone.remove(0);
     expect(n.asDataString()).toBe(n_clone.asDataString());
+    expect(n.getDelimiterCharacter()).toBe(n_clone.getDelimiterCharacter());
+    expect(n.getNoComponents()).toBe(n_clone.getNoComponents());
+    expect(n.getComponent(0)).toBe(n_clone.getComponent(0));
   });
   it("StringName", () => {
     let n: StringName = new StringName("oss.cs.fau.de", '#');
-    let n_clone: StringName = n.clone();
+    let n_clone: Name = n.clone();
     expect(n.asDataString()).toBe(n_clone.asDataString());
     n.remove(0);
     n_clone.remove(0);
     expect(n.asDataString()).toBe(n_clone.asDataString());
+    expect(n.getDelimiterCharacter()).toBe(n_clone.getDelimiterCharacter());
+    expect(n.getNoComponents()).toBe(n_clone.getNoComponents());
+    expect(n.getComponent(0)).toBe(n_clone.getComponent(0));
   });
 });
 
