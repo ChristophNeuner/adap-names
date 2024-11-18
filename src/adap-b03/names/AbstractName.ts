@@ -84,7 +84,7 @@ export abstract class AbstractName implements Name {
         }
         return clone; */
 
-        //return { ...this };
+        //return Object.create(this);
 
         let clone = JSON.parse(JSON.stringify(this));
         clone.delimiter = this.delimiter;
