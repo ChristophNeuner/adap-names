@@ -161,6 +161,10 @@ describe("Basic StringArrayName function tests", () => {
     let n: Name = new StringArrayName(["oss", "cs", "fau"]);
     n.append("foo\\.bar");
     expect(n.asDataString()).toBe("oss.cs.fau.foo\\.bar");
+
+    let n2: Name = new StringArrayName(["oss", "cs", "fau"], "+");
+    n2.append("foo\\.bar");
+    expect(n2.asDataString()).toBe("oss+cs+fau+foo\\.bar");
   });
 });
 
