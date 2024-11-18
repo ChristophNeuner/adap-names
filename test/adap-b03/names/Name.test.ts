@@ -250,14 +250,20 @@ describe("isEqual and getHashCode (Two equal objects must have the same hashcode
     expect(n.getHashCode()).toBe(n2.getHashCode());
   });
   it("StringName", () => {
-    let n: StringName = new StringName("oss.cs.fau.de", '#');
+    let n: StringName = new StringName("oss.cs.fau.de");
     let n2: StringName = new StringName("oss.cs.fau.de");
     expect(n.isEqual(n2)).toBe(true);
     expect(n.getHashCode()).toBe(n2.getHashCode());
   });
   it("StringArrayName and StringName", () => {
-    let n: StringName = new StringName("oss.cs.fau", '#');
+    let n: StringName = new StringName("oss+cs+fau", "+");
     let n2: StringArrayName = new StringArrayName(["oss", "cs", "fau"], "+");
+    expect(n.isEqual(n2)).toBe(true);
+    expect(n.getHashCode()).toBe(n2.getHashCode());
+  });
+  it("StringArrayName and StringName 2", () => {
+    let n: StringName = new StringName("oss\\+cs+fau", "+");
+    let n2: StringArrayName = new StringArrayName(["oss\\+cs", "fau"], "+");
     expect(n.isEqual(n2)).toBe(true);
     expect(n.getHashCode()).toBe(n2.getHashCode());
   });

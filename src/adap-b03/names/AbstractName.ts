@@ -45,6 +45,15 @@ export abstract class AbstractName implements Name {
     }
 
     public isEqual(other: Name): boolean {
+        if(this.getHashCode() !== other.getHashCode() || this.getNoComponents() !== other.getNoComponents() || this.getDelimiterCharacter() !== other.getDelimiterCharacter()){
+            return false;
+        }
+        for (let i = 0; i < this.getNoComponents(); i++) {
+            if (this.getComponent(i) !== other.getComponent(i)) {
+                return false;
+            }
+        }
+
         return this.asDataString() === other.asDataString();
     }
 
