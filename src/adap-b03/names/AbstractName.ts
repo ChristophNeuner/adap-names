@@ -81,9 +81,8 @@ export abstract class AbstractName implements Name {
         }
         return clone; */
 
-        //return Object.create(this);
-
-        let clone = JSON.parse(JSON.stringify(this));
+        
+        /* let clone = JSON.parse(JSON.stringify(this));
         clone.delimiter = this.delimiter;
         clone.asString = this.asString;
         clone.toString = this.toString;
@@ -102,8 +101,9 @@ export abstract class AbstractName implements Name {
         clone.concat = this.concat;
         clone.removeEscapeCharactersBeforeDelimiters = this.removeEscapeCharactersBeforeDelimiters;
         clone.isIndexOutOfBounds = this.isIndexOutOfBounds;
+        return clone; */
 
-        return clone;
+        return Object.create(this);
     }
 
     public isEmpty(): boolean {

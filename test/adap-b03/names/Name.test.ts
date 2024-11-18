@@ -222,8 +222,7 @@ describe("clone", () => {
     let n: StringArrayName = new StringArrayName(["oss", "cs", "fau"]);
     let n_clone: Name = n.clone();
     expect(n.asDataString()).toBe(n_clone.asDataString());
-    n.remove(0);
-    n_clone.remove(0);
+    n.remove(0); // clone returns shallow copy => both objects are affected
     expect(n.asDataString()).toBe(n_clone.asDataString());
     expect(n.getDelimiterCharacter()).toBe(n_clone.getDelimiterCharacter());
     expect(n.getNoComponents()).toBe(n_clone.getNoComponents());
@@ -233,8 +232,7 @@ describe("clone", () => {
     let n: StringName = new StringName("oss.cs.fau.de", '#');
     let n_clone: Name = n.clone();
     expect(n.asDataString()).toBe(n_clone.asDataString());
-    n.remove(0);
-    n_clone.remove(0);
+    n.remove(0);// clone returns shallow copy => both objects are affected
     expect(n.asDataString()).toBe(n_clone.asDataString());
     expect(n.getDelimiterCharacter()).toBe(n_clone.getDelimiterCharacter());
     expect(n.getNoComponents()).toBe(n_clone.getNoComponents());
