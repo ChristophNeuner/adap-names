@@ -11,9 +11,8 @@ export abstract class AbstractName implements Name {
     }
 
     /**
-     * Returns a human-readable representation of the Name instance using user-set control characters
-     * Control characters are not escaped (creating a human-readable string)
-     * Users can vary the delimiter character to be used
+     * Returns human-readable representation of this object
+     * Expects that delimiter is a single character
      */
     public asString(delimiter: string = this.delimiter): string {
         //remove escape chars
@@ -31,17 +30,15 @@ export abstract class AbstractName implements Name {
         return this.asDataString();
     }
 
-    /** 
-     * Returns a machine-readable representation of Name instance using default control characters
-     * Machine-readable means that from a data string, a Name can be parsed back in
-     * The control characters in the data string are the default characters
+    /**
+     * Returns machine-readable representation of this object
      */
     public asDataString(): string {
         let components: string[] = [];
         for (let i = 0; i < this.getNoComponents(); i++) {
             components.push(this.getComponent(i));
         }
-        return components.join(DEFAULT_DELIMITER);
+        return components.join(this.delimiter);
     }
 
     public isEqual(other: Name): boolean {

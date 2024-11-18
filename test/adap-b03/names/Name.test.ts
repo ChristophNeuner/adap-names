@@ -273,7 +273,7 @@ describe("getHashCode", () => {
   it("foo", () => {
     let n: Name = new StringArrayName(["oss", "cs", "fau"], "#");
     console.log(n.getHashCode());
-    let n2: StringName = new StringName("oss.cs.fau", '#');
+    let n2: StringName = new StringName("oss#cs#fau", '#');
     console.log(n2.getHashCode());
     expect(n.getHashCode()).toBe(n2.getHashCode());
   });
