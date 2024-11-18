@@ -271,7 +271,7 @@ describe("isEqual and getHashCode (Two equal objects must have the same hashcode
 
 describe("getHashCode", () => {
   it("foo", () => {
-    let n: Name = new StringArrayName(["oss", "cs", "fau"]);
+    let n: Name = new StringArrayName(["oss", "cs", "fau"], "#");
     console.log(n.getHashCode());
     let n2: StringName = new StringName("oss.cs.fau", '#');
     console.log(n2.getHashCode());

@@ -59,7 +59,7 @@ export abstract class AbstractName implements Name {
 
     public getHashCode(): number {
         let hashCode: number = 0;
-        const s: string = this.asDataString();
+        const s: string = this.asDataString()+this.getDelimiterCharacter();
         for (let i = 0; i < s.length; i++) {
             let c = s.charCodeAt(i);
             hashCode = (hashCode << 5) - hashCode + c;
