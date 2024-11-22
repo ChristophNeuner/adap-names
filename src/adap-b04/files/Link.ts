@@ -1,5 +1,6 @@
 import { Node } from "./Node";
 import { Directory } from "./Directory";
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
 
 export class Link extends Node {
 
@@ -18,6 +19,7 @@ export class Link extends Node {
     }
 
     public setTargetNode(target: Node): void {
+        this.assertIsNotUndefined(target);
         this.targetNode = target;
     }
 
@@ -27,12 +29,22 @@ export class Link extends Node {
     }
 
     public rename(bn: string): void {
+        this.assertIsValidName(bn);
+
         const target = this.ensureTargetNode(this.targetNode);
         target.rename(bn);
     }
 
     protected ensureTargetNode(target: Node | null): Node {
+        this.assertIsNotUndefined(target);
+
         const result: Node = this.targetNode as Node;
         return result;
+    }
+
+    //assertion methods
+    protected assertIsNotUndefined(node: Node | null): void {
+        let condition: boolean = (node !== undefined);
+        IllegalArgumentException.assertCondition(condition, "undefined argument");
     }
 }

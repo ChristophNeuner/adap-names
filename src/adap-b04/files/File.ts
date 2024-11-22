@@ -1,5 +1,6 @@
 import { Node } from "./Node";
 import { Directory } from "./Directory";
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
 
 enum FileState {
     OPEN,
@@ -16,10 +17,12 @@ export class File extends Node {
     }
 
     public open(): void {
+        this.assertIsInState(FileState.CLOSED);
         // do something
     }
 
     public close(): void {
+        this.assertIsInState(FileState.OPEN);
         // do something
     }
 
@@ -27,4 +30,7 @@ export class File extends Node {
         return this.state;
     }
 
+    protected assertIsInState(state: FileState): void {
+        IllegalArgumentException.assertCondition(this.doGetFileState() === state, "invalid state");
+    }
 }
