@@ -9,10 +9,9 @@ export class StringName extends AbstractName {
     protected indices: number[] = []; //indices of delimiter characters
 
     constructor(other: string, delimiter?: string) {
-        super();
-        if (delimiter !== undefined && delimiter !== null) {
-            this.delimiter = delimiter;
-        }
+        super(delimiter); //this checks and sets the delimiter
+        this.assertIsNotNullOrUndefined(other);
+        //TODO: maybe check single components for validity, but this is probably not necessary, since methods expect properly masked components
 
         this.name = other; //name might contain escape characters
         
@@ -46,12 +45,17 @@ export class StringName extends AbstractName {
     }
 
     public getComponent(i: number): string {
+        this.assertIsValidIndex(i);
+
         let start = this.indices[i] + 1;
         let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
         return this.name.substring(start, end);
     }
 
     public setComponent(i: number, c: string) {
+        this.assertIsValidIndex(i);
+        this.assertIsValidComponent(c);
+
         let oldComponent = this.getComponent(i);
         let start = this.indices[i] + 1;
         let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
@@ -67,26 +71,24 @@ export class StringName extends AbstractName {
     }
 
     public insert(i: number, c: string) {
-        if(i < 0 || i > this.getNoComponents()){
-            throw new Error("Index out of bounds");
+        this.isIndexOutOfBounds(i);
+        this.assertIsValidComponent(c);
+
+        let start = this.indices[i];
+        this.name = this.name.substring(0, start+1) + c + this.delimiter + this.name.substring(start+1);
+        //insert index for new component
+        let numberToInsert = this.indices[i];
+        let indexToInsert = i;
+        this.indices.splice(indexToInsert, 0, numberToInsert);
+        for(let j=i+1;j<this.indices.length;j++){
+            this.indices[j] += c.length + 1;
         }
-        else if(i === this.getNoComponents()){
-            this.append(c);
-        }else{
-            let start = this.indices[i];
-            this.name = this.name.substring(0, start+1) + c + this.delimiter + this.name.substring(start+1);
-            //insert index for new component
-            let numberToInsert = this.indices[i];
-            let indexToInsert = i;
-            this.indices.splice(indexToInsert, 0, numberToInsert);
-            for(let j=i+1;j<this.indices.length;j++){
-                this.indices[j] += c.length + 1;
-            }
-            this.noComponents++;
-        }
+        this.noComponents++;
     }
 
     public append(c: string) {
+        this.assertIsValidComponent(c);
+
         if(this.getNoComponents() === 0){
             this.name = c;
             this.indices.push(-1);
@@ -99,9 +101,8 @@ export class StringName extends AbstractName {
     }
 
     public remove(i: number) {
-        if(i < 0 || i >= this.noComponents){
-            throw new Error("Index out of bounds");
-        }
+        this.assertIsValidIndex(i);
+        
         let start = (i === this.noComponents - 1) ? this.indices[i] : this.indices[i]+1;
         let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
         this.name = this.name.substring(0, start) + this.name.substring(end+1);

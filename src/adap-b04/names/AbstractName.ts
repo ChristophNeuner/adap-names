@@ -1,12 +1,16 @@
 import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
 
 export abstract class AbstractName implements Name {
 
     protected delimiter: string = DEFAULT_DELIMITER;
 
     constructor(delimiter: string = DEFAULT_DELIMITER) {
-        throw new Error("needs implementation");
+        this.assertIsNotNullOrUndefined(delimiter);
+        this.assertIsValidDelimiter(delimiter);
+
+        this.delimiter = delimiter;
     }
 
     public clone(): Name {
@@ -14,6 +18,9 @@ export abstract class AbstractName implements Name {
     }
 
     public asString(delimiter: string = this.delimiter): string {
+        this.assertIsNotNullOrUndefined(delimiter);
+        this.assertIsValidDelimiter(delimiter);
+
         //remove escape chars
         let result = "";
         for(let i=0; i<this.getNoComponents(); i++){
@@ -38,6 +45,8 @@ export abstract class AbstractName implements Name {
     }
 
     public isEqual(other: Name): boolean {
+        this.assertIsNotNullOrUndefined(other);
+
         if(this.getHashCode() !== other.getHashCode() || this.getNoComponents() !== other.getNoComponents() || this.getDelimiterCharacter() !== other.getDelimiterCharacter()){
             return false;
         }
@@ -70,6 +79,8 @@ export abstract class AbstractName implements Name {
     }
 
     public concat(other: Name): void {
+        this.assertIsNotNullOrUndefined(other);
+
         if(other.getDelimiterCharacter() !== this.getDelimiterCharacter()){
             throw new Error("Delimiters differ");
         }
@@ -78,6 +89,17 @@ export abstract class AbstractName implements Name {
         }
     }
 
+    abstract getNoComponents(): number;
+
+    abstract getComponent(i: number): string;
+    abstract setComponent(i: number, c: string): void;
+
+    abstract insert(i: number, c: string): void;
+    abstract append(c: string): void;
+    abstract remove(i: number): void;
+
+
+    //helper methods
     protected removeEscapeCharactersBeforeDelimiters(s: string, delimiter: string): string {
         for(let i=0; i<s.length-1; i++){
             if(s[i] === ESCAPE_CHARACTER && s[i+1] === delimiter){
@@ -92,12 +114,30 @@ export abstract class AbstractName implements Name {
     }
 
 
-    abstract getNoComponents(): number;
+    //assertion methods
+    protected assertIsNotNullOrUndefined(other: Object): void {
+        let condition: boolean = !IllegalArgumentException.isNullOrUndefined(other);
+        IllegalArgumentException.assertCondition(condition, "null or undefined argument");        
+    }
 
-    abstract getComponent(i: number): string;
-    abstract setComponent(i: number, c: string): void;
+    protected assertIsValidDelimiter(delimiter: string): void {
+        let condition: boolean = delimiter.length === 1 && delimiter !== ESCAPE_CHARACTER;
+        IllegalArgumentException.assertCondition(condition, "Delimiter must be a single character and not the escape character");
+    }
 
-    abstract insert(i: number, c: string): void;
-    abstract append(c: string): void;
-    abstract remove(i: number): void;
+    //checks one single component
+    protected assertIsValidComponent(c: string): void {
+        IllegalArgumentException.assertIsNotNullOrUndefined(c, "Component is null or undefined");
+        for(let i=0; i<c.length; i++){
+            let char: string = c[i];
+            let condition: boolean = (char === this.delimiter && (i===0 || c[i-1] !== ESCAPE_CHARACTER));
+            IllegalArgumentException.assertCondition(!condition, "Delimiter without preceding escape char is not allowed in component");
+        }
+    }
+
+    protected assertIsValidIndex(i: number): void {
+        IllegalArgumentException.assertIsNotNullOrUndefined(i, "Index is null or undefined");
+        let condition: boolean = !this.isIndexOutOfBounds(i);
+        IllegalArgumentException.assertCondition(condition, "Index out of bounds");
+    }
 }
