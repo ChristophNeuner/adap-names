@@ -1,20 +1,32 @@
 import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { MethodFailureException } from "../common/MethodFailureException";
+import { StringName } from "./StringName";
+import { StringArrayName } from "./StringArrayName";
 
 export abstract class AbstractName implements Name {
 
     protected delimiter: string = DEFAULT_DELIMITER;
 
     constructor(delimiter: string = DEFAULT_DELIMITER) {
+        //pre-conditions
         this.assertIsNotNullOrUndefined(delimiter);
         this.assertIsValidDelimiter(delimiter);
 
         this.delimiter = delimiter;
+
+        //post-conditions
+        this.assertCorrectDelimiter(delimiter);
     }
 
     public clone(): Name {
-        return Object.create(this);
+        let clone = Object.create(this);
+
+        //post-conditions
+        this.assertCorrectClone(clone);
+        
+        return clone;
     }
 
     public asString(delimiter: string = this.delimiter): string {
@@ -29,11 +41,22 @@ export abstract class AbstractName implements Name {
                 result += delimiter;
             }
         }
+
+        //post-conditions
+        this.assertIsNotNullOrUndefined(result);
+        this.assertNotContainsEscapeChar(result);
+
         return result;
     }
 
     public toString(): string {
-        return this.asDataString();
+        let dataString = this.asDataString();
+
+        //post-conditions
+        this.assertIsNotNullOrUndefined(dataString);
+
+
+        return dataString;
     }
 
     public asDataString(): string {
@@ -41,7 +64,12 @@ export abstract class AbstractName implements Name {
         for (let i = 0; i < this.getNoComponents(); i++) {
             components.push(this.getComponent(i));
         }
-        return components.join(this.delimiter);
+        let result = components.join(this.delimiter);
+
+        //post-conditions
+        this.assertIsNotNullOrUndefined(result);
+
+        return result;
     }
 
     public isEqual(other: Name): boolean {
@@ -67,6 +95,10 @@ export abstract class AbstractName implements Name {
             hashCode = (hashCode << 5) - hashCode + c;
             hashCode |= 0;
         }
+
+        //post-conditions
+        this.assertIsNotNullOrUndefined(hashCode);
+
         return hashCode;
     }
 
@@ -114,7 +146,7 @@ export abstract class AbstractName implements Name {
     }
 
 
-    //assertion methods
+    //pre-conditions
     protected assertIsNotNullOrUndefined(other: Object): void {
         let condition: boolean = !IllegalArgumentException.isNullOrUndefined(other);
         IllegalArgumentException.assertCondition(condition, "null or undefined argument");        
@@ -139,5 +171,39 @@ export abstract class AbstractName implements Name {
         IllegalArgumentException.assertIsNotNullOrUndefined(i, "Index is null or undefined");
         let condition: boolean = !this.isIndexOutOfBounds(i);
         IllegalArgumentException.assertCondition(condition, "Index out of bounds");
+    }
+
+
+    // post-conditions
+    protected assertCorrectDelimiter(delimiter: string){
+        let condition: boolean = this.delimiter === delimiter;
+        MethodFailureException.assertCondition(condition, "Delimiter not set correctly");
+    }
+
+    protected assertCorrectClone(clone: Name){
+        let condition: boolean = this.asDataString() === clone.asDataString();
+        MethodFailureException.assertCondition(condition, "Clone not equal to original");
+    }
+
+    protected assertNotContainsEscapeChar(s: string){
+        let condition: boolean = s.indexOf(ESCAPE_CHARACTER) === -1;
+        MethodFailureException.assertCondition(condition, "String contains delimiter");
+    }
+
+    protected assertCorrectDataString(dataString: string){
+        // from a data string, the original name can be reconstructed
+        let condition: boolean = true;
+        if(this instanceof StringName){
+            let name: StringName = new StringName(dataString, this.delimiter);
+            let condition: boolean = name.isEqual(this);         
+        }else if(this instanceof StringArrayName){
+            let comps: string[] = [];
+            for(let i=0; i<this.getNoComponents(); i++){
+                comps.push(this.getComponent(i));
+            }
+            let name: StringArrayName = new StringArrayName(comps, this.delimiter);
+            let condition: boolean = name.asDataString() === dataString;        
+        }
+        MethodFailureException.assertCondition(condition, "Data string not equal to asDataString");
     }
 }

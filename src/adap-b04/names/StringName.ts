@@ -1,6 +1,7 @@
 import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
 import { AbstractName } from "./AbstractName";
+import { MethodFailureException } from "../common/MethodFailureException";
 
 export class StringName extends AbstractName {
 
@@ -38,6 +39,8 @@ export class StringName extends AbstractName {
                 this.indices.push(i);
             }
         }
+
+        MethodFailureException.assertIsNotNullOrUndefined(this.name, "Components not correctly set");
     }
 
     public getNoComponents(): number {
@@ -56,6 +59,8 @@ export class StringName extends AbstractName {
         this.assertIsValidIndex(i);
         this.assertIsValidComponent(c);
 
+        const original = this.name;
+
         let oldComponent = this.getComponent(i);
         let start = this.indices[i] + 1;
         let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
@@ -68,11 +73,16 @@ export class StringName extends AbstractName {
         for(let j=i+1;j<this.indices.length;j++){
             this.indices[j] += diff;
         }
+
+        MethodFailureException.assertIsNotNullOrUndefined(this.getComponent(i), "Component not correctly set");
+        this.assertSet(i, c, original);
     }
 
     public insert(i: number, c: string) {
         this.isIndexOutOfBounds(i);
         this.assertIsValidComponent(c);
+
+        const original = this.name;
 
         let start = this.indices[i];
         this.name = this.name.substring(0, start+1) + c + this.delimiter + this.name.substring(start+1);
@@ -84,10 +94,15 @@ export class StringName extends AbstractName {
             this.indices[j] += c.length + 1;
         }
         this.noComponents++;
+
+        MethodFailureException.assertIsNotNullOrUndefined(this.getComponent(i), "Component not correctly inserted");
+        this.assertInsert(i, c, original);
     }
 
     public append(c: string) {
         this.assertIsValidComponent(c);
+
+        const original = this.name;
 
         if(this.getNoComponents() === 0){
             this.name = c;
@@ -98,11 +113,16 @@ export class StringName extends AbstractName {
         this.indices.push(this.name.length);
         this.name += this.delimiter + c;
         this.noComponents++;
+
+        MethodFailureException.assertIsNotNullOrUndefined(this.getComponent(this.getNoComponents()-1), "Component not correctly appended");
+        this.assertAppend(c, original);
     }
 
     public remove(i: number) {
         this.assertIsValidIndex(i);
         
+        const original = this.name;
+
         let start = (i === this.noComponents - 1) ? this.indices[i] : this.indices[i]+1;
         let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
         this.name = this.name.substring(0, start) + this.name.substring(end+1);
@@ -113,9 +133,79 @@ export class StringName extends AbstractName {
             this.indices[j] -= end+1 - start;
         }
         this.noComponents--;
+
+        this.assertRemove(i, this.getComponent(i), original);
     }
 
     public getIndices(): number[] {
         return this.indices;
+    }
+
+
+
+    // post-conditions
+    private restore(original: string) {
+        this.name = original;
+    }
+
+    protected assertConstructor(): void {
+        let condition = true;
+        
+        //TODO
+
+        MethodFailureException.assertCondition(condition, "Components not correctly set");
+    }
+
+    protected assertSet(i: number, c: string, original: string): void {
+        let condition = true;
+        condition = this.getNoComponents() === original.length;
+        for(let j=0; j<i; j++){
+            condition = this.getComponent(j) === original[j];
+        }
+        for(let j=i+1; j<this.getNoComponents(); j++){
+            condition = this.getComponent(j) === original[j];
+        }
+        condition = this.getComponent(i) === c;
+
+        if(!condition){this.restore(original);}
+        MethodFailureException.assertCondition(condition, "Component not correctly set");
+    }
+
+    protected assertInsert(i: number, c: string, original: string): void {
+        let condition = true;
+        condition = this.getNoComponents() === original.length + 1;
+        for(let j=0; j<i; j++){
+            condition = this.getComponent(j) === original[j];
+        }
+        condition = this.getComponent(i) === c;
+        for(let j=i+1; j<this.getNoComponents(); j++){
+            condition = this.getComponent(j) === original[j-1];
+        }
+        if(!condition){this.restore(original);}
+        MethodFailureException.assertCondition(condition, "Component not correctly inserted");
+    }
+
+    protected assertAppend(c: string, original: string): void {
+        let condition = true;
+        condition = this.getNoComponents() === original.length + 1;
+        for(let j=0; j<this.getNoComponents()-1; j++){
+            condition = this.getComponent(j) === original[j];
+        }
+        condition = this.getComponent(this.getNoComponents()-1) === c;
+        if(!condition){this.restore(original);}
+        MethodFailureException.assertCondition(condition, "Component not correctly appended");
+    }
+
+    protected assertRemove(i: number, c: string, original: string): void {
+        let condition = true;
+        condition = this.getNoComponents() === original.length - 1;
+        for(let j=0; j<i; j++){
+            condition = this.getComponent(j) === original[j];
+        }
+        for(let j=i; j<this.getNoComponents(); j++){
+            condition = this.getComponent(j) === original[j+1];
+        }
+        if(!condition){this.restore(original);}
+        MethodFailureException.assertCondition(condition, "Component not correctly removed");
     }
 }
