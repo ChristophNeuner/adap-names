@@ -277,9 +277,46 @@ describe("isEqual and getHashCode (Two equal objects must have the same hashcode
 describe("getHashCode", () => {
   it("foo", () => {
     let n: Name = new StringArrayName(["oss", "cs", "fau"], "#");
-    console.log(n.getHashCode());
     let n2: StringName = new StringName("oss#cs#fau", '#');
-    console.log(n2.getHashCode());
     expect(n.getHashCode()).toBe(n2.getHashCode());
   });
+});
+
+describe("Provoke some Exceptions", () => {
+  it("constructor", () => {
+    expect(() => new StringName(undefined as any)).toThrow(IllegalArgumentException);
+    expect(() => new StringArrayName(undefined as any)).toThrow(IllegalArgumentException);
+    expect(() => new StringName(null as any)).toThrow(IllegalArgumentException);
+    expect(() => new StringArrayName(null as any)).toThrow(IllegalArgumentException);
+  });
+  it("getComponent", () => {
+    let san: Name = new StringArrayName(["oss", "cs", "fau"], "#");
+    expect(() => san.getComponent(4)).toThrow(IllegalArgumentException);
+
+    let sn: Name = new StringName("oss.cs.fau");
+    expect(() => sn.getComponent(4)).toThrow(IllegalArgumentException);
+  });
+  it("setComponent", () => {
+    let san: Name = new StringArrayName(["oss", "cs", "fau"], "#");
+    expect(() => san.setComponent(4, "foo")).toThrow(IllegalArgumentException);
+
+    let sn: Name = new StringName("oss.cs.fau");
+    expect(() => sn.setComponent(4, "foo")).toThrow(IllegalArgumentException);
+  });
+  it("insert", () => {
+    let san: Name = new StringArrayName(["oss", "cs", "fau"], "#");
+    expect(() => san.insert(4, "foo")).toThrow(IllegalArgumentException);
+
+    let sn: Name = new StringName("oss.cs.fau");
+    expect(() => sn.insert(4, "foo")).toThrow(IllegalArgumentException);
+  });
+  it("remove", () => {
+    let san: Name = new StringArrayName(["oss", "cs", "fau"], "#");
+    expect(() => san.remove(4)).toThrow(IllegalArgumentException);
+
+    let sn: Name = new StringName("oss.cs.fau");
+    expect(() => sn.remove(4)).toThrow(IllegalArgumentException);
+  });
+
+  //TODO more tests
 });
