@@ -15,6 +15,7 @@ export class StringArrayName extends AbstractName {
         this.components = [...other]; //components might contain escape characters
 
         this.assertConstructor(other);
+        this.assertClassInvariants();
     }
 
     public getNoComponents(): number {
@@ -36,6 +37,7 @@ export class StringArrayName extends AbstractName {
 
         MethodFailureException.assertIsNotNullOrUndefined(this.components[i], "Component not correctly set");
         this.assertSet(i, c, originalComponents);
+        this.assertClassInvariants();
     }
 
     public insert(i: number, c: string) {
@@ -47,6 +49,7 @@ export class StringArrayName extends AbstractName {
 
         MethodFailureException.assertIsNotNullOrUndefined(this.components[i], "Component not correctly inserted");
         this.assertInsert(i, c, originalComponents);
+        this.assertClassInvariants();
     }
 
     public append(c: string) {
@@ -57,6 +60,7 @@ export class StringArrayName extends AbstractName {
 
         MethodFailureException.assertIsNotNullOrUndefined(this.components[this.getNoComponents()-1], "Component not correctly appended");
         this.assertAppend(c, originalComponents);
+        this.assertClassInvariants();
     }
 
     public remove(i: number) {
@@ -66,6 +70,19 @@ export class StringArrayName extends AbstractName {
         this.components.splice(i, 1);
 
         this.assertRemove(i, this.components[i], originalComponents);
+        this.assertClassInvariants();
+    }
+
+    public concat(other: Name): void {
+        this.assertOtherNameIsValid(other);
+        const originalComponents = [...this.components]; //for post-conditions
+
+        for(let i=0; i<other.getNoComponents(); i++){
+            this.append(other.getComponent(i));
+        }
+
+        this.assertConcat(originalComponents, other);
+        this.assertClassInvariants();
     }
 
 
@@ -143,5 +160,24 @@ export class StringArrayName extends AbstractName {
         }
         if(!condition){this.restore(original);}
         MethodFailureException.assertCondition(condition, "Component not correctly removed");
+    }
+
+    protected assertConcat(original: string[], other:Name): void {
+        let condition = true;
+        for(let i=0; i<original.length; i++){
+            condition = this.getComponent(i) === original[i];
+        }
+        for(let i=0; i<other.getNoComponents(); i++){
+            condition = this.getComponent(i+original.length) === other.getComponent(i);
+        }
+        if(!condition){this.restore(original);}
+        MethodFailureException.assertCondition(condition, "Components not correctly concatenated");
+    }
+
+    // class invariants
+    protected assertClassInvariants(){
+        super.assertClassInvariants();
+
+        //TODO
     }
 }

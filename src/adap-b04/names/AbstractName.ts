@@ -4,28 +4,29 @@ import { IllegalArgumentException } from "../common/IllegalArgumentException";
 import { MethodFailureException } from "../common/MethodFailureException";
 import { StringName } from "./StringName";
 import { StringArrayName } from "./StringArrayName";
+import { InvalidStateException } from "../common/InvalidStateException";
 
 export abstract class AbstractName implements Name {
 
     protected delimiter: string = DEFAULT_DELIMITER;
 
     constructor(delimiter: string = DEFAULT_DELIMITER) {
-        //pre-conditions
+        
         this.assertIsNotNullOrUndefined(delimiter);
         this.assertIsValidDelimiter(delimiter);
 
         this.delimiter = delimiter;
 
-        //post-conditions
+
         this.assertCorrectDelimiter(delimiter);
+        this.assertClassInvariants();
     }
 
     public clone(): Name {
         let clone = Object.create(this);
 
-        //post-conditions
         this.assertCorrectClone(clone);
-        
+        this.assertClassInvariants();
         return clone;
     }
 
@@ -42,20 +43,18 @@ export abstract class AbstractName implements Name {
             }
         }
 
-        //post-conditions
+
         this.assertIsNotNullOrUndefined(result);
         this.assertNotContainsEscapeChar(result);
+        this.assertClassInvariants();
 
         return result;
     }
 
     public toString(): string {
         let dataString = this.asDataString();
-
-        //post-conditions
         this.assertIsNotNullOrUndefined(dataString);
-
-
+        this.assertClassInvariants();
         return dataString;
     }
 
@@ -66,9 +65,9 @@ export abstract class AbstractName implements Name {
         }
         let result = components.join(this.delimiter);
 
-        //post-conditions
-        this.assertIsNotNullOrUndefined(result);
 
+        this.assertIsNotNullOrUndefined(result);
+        this.assertClassInvariants();
         return result;
     }
 
@@ -84,6 +83,7 @@ export abstract class AbstractName implements Name {
             }
         }
 
+        this.assertClassInvariants();
         return this.asDataString() === other.asDataString();
     }
 
@@ -96,29 +96,20 @@ export abstract class AbstractName implements Name {
             hashCode |= 0;
         }
 
-        //post-conditions
-        this.assertIsNotNullOrUndefined(hashCode);
 
+        this.assertIsNotNullOrUndefined(hashCode);
+        this.assertClassInvariants();
         return hashCode;
     }
 
     public isEmpty(): boolean {
+        this.assertClassInvariants();
         return this.getNoComponents() === 0;
     }
 
     public getDelimiterCharacter(): string {
+        this.assertClassInvariants();
         return this.delimiter;
-    }
-
-    public concat(other: Name): void {
-        this.assertIsNotNullOrUndefined(other);
-
-        if(other.getDelimiterCharacter() !== this.getDelimiterCharacter()){
-            throw new Error("Delimiters differ");
-        }
-        for(let i=0; i<other.getNoComponents(); i++){
-            this.append(other.getComponent(i));
-        }
     }
 
     abstract getNoComponents(): number;
@@ -129,6 +120,7 @@ export abstract class AbstractName implements Name {
     abstract insert(i: number, c: string): void;
     abstract append(c: string): void;
     abstract remove(i: number): void;
+    abstract concat(other: Name): void;
 
 
     //helper methods
@@ -155,6 +147,14 @@ export abstract class AbstractName implements Name {
     protected assertIsValidDelimiter(delimiter: string): void {
         let condition: boolean = delimiter.length === 1 && delimiter !== ESCAPE_CHARACTER;
         IllegalArgumentException.assertCondition(condition, "Delimiter must be a single character and not the escape character");
+    }
+
+    protected assertOtherNameIsValid(other: Name): void {
+        IllegalArgumentException.assertIsNotNullOrUndefined(other, "Other name is null or undefined");
+        IllegalArgumentException.assertCondition(other.getDelimiterCharacter() === this.delimiter, "Delimiters do not match");
+        for(let i=0; i<other.getNoComponents(); i++){
+            this.assertIsValidComponent(other.getComponent(i));
+        }
     }
 
     //checks one single component
@@ -195,7 +195,7 @@ export abstract class AbstractName implements Name {
         let condition: boolean = true;
         if(this instanceof StringName){
             let name: StringName = new StringName(dataString, this.delimiter);
-            let condition: boolean = name.isEqual(this);         
+            let condition: boolean = name.asDataString() === dataString;        
         }else if(this instanceof StringArrayName){
             let comps: string[] = [];
             for(let i=0; i<this.getNoComponents(); i++){
@@ -205,5 +205,15 @@ export abstract class AbstractName implements Name {
             let condition: boolean = name.asDataString() === dataString;        
         }
         MethodFailureException.assertCondition(condition, "Data string not equal to asDataString");
+    }
+    
+    // class invariants
+    protected assertClassInvariants(){
+        InvalidStateException.assertIsNotNullOrUndefined(this.delimiter, "Delimiter null or undefined");
+
+        let condition: boolean = true;
+        condition = this.delimiter.length === 1;
+        condition = this.delimiter !== ESCAPE_CHARACTER;
+        InvalidStateException.assertCondition(condition, "Delimiter not correctly set");
     }
 }
