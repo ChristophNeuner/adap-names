@@ -41,8 +41,13 @@ export class StringArrayName extends AbstractName {
     }
 
     public insert(i: number, c: string) {
-        this.assertIsValidIndex(i);
+        this.assertIsValidIndexForInsert(i);
         this.assertIsValidComponent(c);
+
+        if(i === this.getNoComponents()){
+            this.append(c);
+            return;
+        }
 
         const originalComponents = [...this.components]; //for post-conditions
         this.components.splice(i, 0, c); //component might contain escape characters

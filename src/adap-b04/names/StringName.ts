@@ -82,8 +82,13 @@ export class StringName extends AbstractName {
     }
 
     public insert(i: number, c: string) {
-        this.assertIsValidIndex(i);
+        this.assertIsValidIndexForInsert(i);
         this.assertIsValidComponent(c);
+
+        if(i === this.getNoComponents()){
+            this.append(c);
+            return;
+        }
 
         const original = new StringName(this.name, this.delimiter);
 
@@ -127,6 +132,7 @@ export class StringName extends AbstractName {
         this.assertIsValidIndex(i);
         
         const original = new StringName(this.name, this.delimiter);
+        const removedComponent = this.getComponent(i);
 
         let start = (i === this.noComponents - 1) ? this.indices[i] : this.indices[i]+1;
         let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
@@ -139,7 +145,7 @@ export class StringName extends AbstractName {
         }
         this.noComponents--;
 
-        this.assertRemove(i, this.getComponent(i), original);
+        this.assertRemove(i, removedComponent, original);
         this.assertClassInvariants();
     }
 

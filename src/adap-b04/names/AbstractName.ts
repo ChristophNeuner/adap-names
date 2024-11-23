@@ -2,8 +2,6 @@ import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
 import { MethodFailureException } from "../common/MethodFailureException";
-import { StringName } from "./StringName";
-import { StringArrayName } from "./StringArrayName";
 import { InvalidStateException } from "../common/InvalidStateException";
 
 export abstract class AbstractName implements Name {
@@ -133,11 +131,6 @@ export abstract class AbstractName implements Name {
         return s;
     }
 
-    protected isIndexOutOfBounds(i: number): boolean {
-        return i < 0 || i >= this.getNoComponents();
-    }
-
-
     //pre-conditions
     protected assertIsNotNullOrUndefined(other: Object): void {
         let condition: boolean = !IllegalArgumentException.isNullOrUndefined(other);
@@ -169,7 +162,13 @@ export abstract class AbstractName implements Name {
 
     protected assertIsValidIndex(i: number): void {
         IllegalArgumentException.assertIsNotNullOrUndefined(i, "Index is null or undefined");
-        let condition: boolean = !this.isIndexOutOfBounds(i);
+        let condition: boolean = !(i < 0 || i >= this.getNoComponents());
+        IllegalArgumentException.assertCondition(condition, "Index out of bounds");
+    }
+
+    protected assertIsValidIndexForInsert(i: number): void {
+        IllegalArgumentException.assertIsNotNullOrUndefined(i, "Index is null or undefined");
+        let condition: boolean = !(i < 0 || i > this.getNoComponents());
         IllegalArgumentException.assertCondition(condition, "Index out of bounds");
     }
 
@@ -188,23 +187,6 @@ export abstract class AbstractName implements Name {
     protected assertNotContainsEscapeChar(s: string){
         let condition: boolean = s.indexOf(ESCAPE_CHARACTER) === -1;
         MethodFailureException.assertCondition(condition, "String contains delimiter");
-    }
-
-    protected assertCorrectDataString(dataString: string){
-        // from a data string, the original name can be reconstructed
-        let condition: boolean = true;
-        if(this instanceof StringName){
-            let name: StringName = new StringName(dataString, this.delimiter);
-            let condition: boolean = name.asDataString() === dataString;        
-        }else if(this instanceof StringArrayName){
-            let comps: string[] = [];
-            for(let i=0; i<this.getNoComponents(); i++){
-                comps.push(this.getComponent(i));
-            }
-            let name: StringArrayName = new StringArrayName(comps, this.delimiter);
-            let condition: boolean = name.asDataString() === dataString;        
-        }
-        MethodFailureException.assertCondition(condition, "Data string not equal to asDataString");
     }
     
     // class invariants
