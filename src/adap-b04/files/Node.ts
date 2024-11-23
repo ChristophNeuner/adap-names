@@ -1,6 +1,7 @@
 import { Name } from "../names/Name";
 import { Directory } from "./Directory";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { RootNode } from "./RootNode";
 
 export class Node {
 
@@ -62,10 +63,13 @@ export class Node {
         let condition: boolean = true;
         const disallowedPattern = /[\/\0]/; // Matches '/' or null character '\0'
 
-        //only the root directory can have an empty name
-        //TODO: find a way to identify the root directory, but do not allow other nodes to have an empty name
-        if(name === ""){
-            return;
+        if (this instanceof RootNode) {
+            // Only the RootNode is allowed to have an empty base name
+            if(name === ""){
+                return;
+            }else{
+                condition = false;
+            }
         }
 
         if(name.length === 0){
