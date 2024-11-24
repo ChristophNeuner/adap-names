@@ -302,6 +302,7 @@ describe("Provoke some Exceptions", () => {
 
     let sn: Name = new StringName("oss.cs.fau");
     expect(() => sn.setComponent(4, "foo")).toThrow(IllegalArgumentException);
+
   });
   it("insert", () => {
     let san: Name = new StringArrayName(["oss", "cs", "fau"], "#");
