@@ -1,6 +1,6 @@
 import { Node } from "./Node";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
-//Test
+
 export class Directory extends Node {
 
     protected childNodes: Set<Node> = new Set();
@@ -21,6 +21,17 @@ export class Directory extends Node {
         this.childNodes.delete(cn); // Yikes! Should have been called remove
     }
 
+    /**
+     * Returns all nodes in the tree that match bn
+     * @param bn basename of node being searched for
+     */
+    public override findNodes(bn: string): Set<Node> {
+        const result: Set<Node> = super.findNodes(bn);
+        for (const child of this.childNodes) {
+            child.findNodes(bn).forEach(node => result.add(node));
+        }
+        return result;
+    }
 
     //assertion methods
     protected assertChildNodeNotAlreadyPresent(cn: Node): void {

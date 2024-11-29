@@ -70,7 +70,12 @@ export class Node {
      * @param bn basename of node being searched for
      */
     public findNodes(bn: string): Set<Node> {
-        throw new Error("needs implementation or deletion");
+        console.log(`Searching in current node:  bn = ${this.getBaseName()}, full name = ${this.getFullName()}`);
+        const result: Set<Node> = new Set<Node>();
+        if (this.getBaseName() === bn) {
+            result.add(this);
+        }
+        return result;
     }
 
     protected assertClassInvariants(): void {

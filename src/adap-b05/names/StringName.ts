@@ -2,256 +2,185 @@ import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
 import { AbstractName } from "./AbstractName";
 import { MethodFailedException } from "../common/MethodFailedException";
+import { InvalidStateException } from "../common/InvalidStateException";
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
 
 export class StringName extends AbstractName {
 
     protected name: string = "";
     protected noComponents: number = 0;
-    protected indices: number[] = []; //indices of delimiter characters
 
     constructor(other: string, delimiter?: string) {
-        super(delimiter); //this checks and sets the delimiter
-        this.assertIsNotNullOrUndefined(other);
-        //TODO: maybe check single components for validity, but this is probably not necessary, since methods expect properly masked components
+        super(delimiter);
+        this.assertHasValidParameter(other, "other cannot be null or undefined");
+        this.init(other)
+        this.assertIsValidNameState(other);
+    }
 
-        this.name = other; //name might contain escape characters
-        
-        // set length
-        if(other === ""){
-            this.noComponents = 0;
-            return;
-        }
-        for(let i=0;i<this.name.length;i++) {
-            if(this.name[i] === ESCAPE_CHARACTER) {
-                i++; // skip escape character
-            }else if(this.name[i] === this.delimiter) {
-                this.noComponents++;
-            }
-        }
-        this.noComponents++; //last component is not followed by delimiter
+    public createOrigin(): Name {
+        return new StringName("", DEFAULT_DELIMITER);
+    }
+    
+    public init(other: string): void {
+        this.name = other;
+        this.noComponents = this.getNoComponents();
+    }
 
-        // set indices
-        this.indices.push(-1); //first component starts at index 0
-        for(let i=0;i<this.name.length;i++) {
-            if(this.name[i] === ESCAPE_CHARACTER) {
-                i++; // skip escape character
-            }else if(this.name[i] === this.delimiter) {
-                this.indices.push(i);
-            }
-        }
+    public reset(original: string, noComponents: number): void {
+        this.name = original;
+        this.noComponents = noComponents;
+    }
 
-        MethodFailedException.assertIsNotNullOrUndefined(this.name, "Components not correctly set");
-        this.assertClassInvariants();
+    // methods for assertions (class invariants)
+    protected assertStringNameIsValid(): void {
+        super.assertAbstractNameIsValid();
+        InvalidStateException.assertIsNotNullOrUndefined(this.name, "Name cannot be null or undefined");
+        InvalidStateException.assertIsNotNullOrUndefined(this.noComponents, "noComponents cannot be null or undefined");
+
+        const cond = this.noComponents === this.getNoComponents();
+        InvalidStateException.assertCondition(cond, "noComponents is not === to the noComponents in Name");
     }
 
     public getNoComponents(): number {
-        return this.noComponents;
+        return this.asStringArrayName().length;
     }
 
     public getComponent(i: number): string {
-        this.assertIsValidIndex(i);
-
-        let start = this.indices[i] + 1;
-        let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
-        this.assertClassInvariants();
-        return this.name.substring(start, end);
+        this.assertHasValidIndex(i);
+        const component = this.asStringArrayName()[i];
+        return component;
     }
 
     public setComponent(i: number, c: string) {
-        this.assertIsValidIndex(i);
-        this.assertIsValidComponent(c);
+        this.assertHasValidIndex(i);
+        this.assertHasValidParameter(c);
 
-        const original = new StringName(this.name, this.delimiter);
+        const original = this.name;
+        const noComponents = this.noComponents;
 
-        let oldComponent = this.getComponent(i);
-        let start = this.indices[i] + 1;
-        let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
-        this.name = this.name.substring(0, start) + c + this.name.substring(end);
-        //update indices
-        if(oldComponent.length === c.length){
-            return;
-        }
-        let diff = c.length - oldComponent.length;
-        for(let j=i+1;j<this.indices.length;j++){
-            this.indices[j] += diff;
-        }
+        const components = this.asStringArrayName();
+        components[i] = c;
+        this.name = this.asStringName(components); 
 
-        MethodFailedException.assertIsNotNullOrUndefined(this.getComponent(i), "Component not correctly set");
-        this.assertSet(i, c, original);
-        this.assertClassInvariants();
+        this.assertIsValidComponent("set", c, i, original, noComponents);
     }
 
     public insert(i: number, c: string) {
-        this.assertIsValidIndexForInsert(i);
-        this.assertIsValidComponent(c);
+        this.assertHasValidIndex(i);
+        this.assertHasValidParameter(c);
 
-        if(i === this.getNoComponents()){
-            this.append(c);
-            return;
-        }
+        const original = this.name;
+        const noComponents = this.noComponents;
 
-        const original = new StringName(this.name, this.delimiter);
+        let components = this.asStringArrayName();
+        components.splice(i, 0, c);
+        this.name = this.asStringName(components);
+        this.noComponents += 1;
 
-        let start = this.indices[i];
-        this.name = this.name.substring(0, start+1) + c + this.delimiter + this.name.substring(start+1);
-        //insert index for new component
-        let numberToInsert = this.indices[i];
-        let indexToInsert = i;
-        this.indices.splice(indexToInsert, 0, numberToInsert);
-        for(let j=i+1;j<this.indices.length;j++){
-            this.indices[j] += c.length + 1;
-        }
-        this.noComponents++;
-
-        MethodFailedException.assertIsNotNullOrUndefined(this.getComponent(i), "Component not correctly inserted");
-        this.assertInsert(i, c, original);
-        this.assertClassInvariants();
+        this.assertIsValidComponent("insert", c, i, original, noComponents);
     }
 
     public append(c: string) {
-        this.assertIsValidComponent(c);
+        this.assertHasValidParameter(c);
+        const original = this.name;
+        const noComponents = this.noComponents;
 
-        const original = new StringName(this.name, this.delimiter);
+        this.name += this.getDelimiterCharacter() + c;
+        this.noComponents += 1;
 
-        if(this.getNoComponents() === 0){
-            this.name = c;
-            this.indices.push(-1);
-            this.noComponents++;
-            return;
-        }
-        this.indices.push(this.name.length);
-        this.name += this.delimiter + c;
-        this.noComponents++;
-
-        MethodFailedException.assertIsNotNullOrUndefined(this.getComponent(this.getNoComponents()-1), "Component not correctly appended");
-        this.assertAppend(c, original);
-        this.assertClassInvariants();
+        this.assertIsValidComponent("append", c, null, original, noComponents);
     }
 
     public remove(i: number) {
-        this.assertIsValidIndex(i);
-        
-        const original = new StringName(this.name, this.delimiter);
-        const removedComponent = this.getComponent(i);
+        this.assertHasValidIndex(i);
 
-        let start = (i === this.noComponents - 1) ? this.indices[i] : this.indices[i]+1;
-        let end = (i === this.noComponents - 1) ? this.name.length : this.indices[i + 1];
-        this.name = this.name.substring(0, start) + this.name.substring(end+1);
+        const original = this.name;
+        const noComponents = this.noComponents;
 
-        //update indices
-        this.indices.splice(i, 1);
-        for(let j=i;j<this.indices.length;j++){
-            this.indices[j] -= end+1 - start;
-        }
-        this.noComponents--;
+        let components = this.asStringArrayName();
+        components.splice(i, 1);
+        this.name = this.asStringName(components);
+        this.noComponents -= 1;
 
-        this.assertRemove(i, removedComponent, original);
-        this.assertClassInvariants();
+        this.assertIsValidComponent("remove", null, i, original, noComponents);
     }
 
-    public concat(other: Name): void {
-        this.assertOtherNameIsValid(other);
-
-        const original = new StringName(this.name, this.delimiter);
-
-        for(let i=0; i<other.getNoComponents(); i++){
-            this.append(other.getComponent(i));
-        }
-
-        this.assertConcat(original, other);
-        this.assertClassInvariants();
+    protected splitComponents(str: string, delimiter: string = this.getDelimiterCharacter()): string[] {
+        const regex = this.createRegexForDelimiter(delimiter);
+        return str.split(regex);
     }
 
-    public getIndices(): number[] {
-        return this.indices;
+    protected createRegexForDelimiter(delimiter: string): RegExp {
+        const regexEscapedDelimiter = delimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(?<!\\${ESCAPE_CHARACTER})${regexEscapedDelimiter}`, "g");
     }
 
-
-
-    // post-conditions
-    private restore(original: StringName) {
-        this.name = original.name;
-        this.indices = original.indices;
-        this.noComponents = original.noComponents;
+    protected asStringArrayName(str: string = this.name): string[] {
+        return this.splitComponents(str, this.getDelimiterCharacter());
     }
 
-    protected assertConstructor(): void {
-        let condition = true;
-        
-        //TODO
-
-        MethodFailedException.assertCondition(condition, "Components not correctly set");
+    protected asStringName(stringArrayName: string[], delimiter: string = this.getDelimiterCharacter()): string {
+        return stringArrayName.join(delimiter);
     }
 
-    protected assertSet(i: number, c: string, original: StringName): void {
-        let condition = true;
-        condition = this.getNoComponents() === original.getNoComponents();
-        for(let j=0; j<i; j++){
-            condition = this.getComponent(j) === original.getComponent(j);
-        }
-        for(let j=i+1; j<this.getNoComponents(); j++){
-            condition = this.getComponent(j) === original.getComponent(j);
-        }
-        condition = this.getComponent(i) === c;
-
-        if(!condition){this.restore(original);}
-        MethodFailedException.assertCondition(condition, "Component not correctly set");
+    // methods for assertions (preconditions)
+    protected assertHasValidIndex(i: number): void {
+        IllegalArgumentException.assertIsNotNullOrUndefined(i);
+        const cond = (i >= 0 && i < this.getNoComponents());
+        IllegalArgumentException.assertCondition(cond, "Index is out of bounds");
     }
 
-    protected assertInsert(i: number, c: string, original: StringName): void {
-        let condition = true;
-        condition = this.getNoComponents() === original.getNoComponents() + 1;
-        for(let j=0; j<i; j++){
-            condition = this.getComponent(j) === original.getComponent(j);
-        }
-        condition = this.getComponent(i) === c;
-        for(let j=i+1; j<this.getNoComponents(); j++){
-            condition = this.getComponent(j) === original.getComponent(j-1);
-        }
-        if(!condition){this.restore(original);}
-        MethodFailedException.assertCondition(condition, "Component not correctly inserted");
+    // methods for assertions (post-conditions)
+    protected assertIsValidNameState(name: string): void {
+        const cond = this.name === name;
+        MethodFailedException.assertCondition(cond, "StringName validation failed");
     }
 
-    protected assertAppend(c: string, original: StringName): void {
-        let condition = true;
-        condition = this.getNoComponents() === original.getNoComponents() + 1;
-        for(let j=0; j<this.getNoComponents()-1; j++){
-            condition = this.getComponent(j) === original.getComponent(j);
-        }
-        condition = this.getComponent(this.getNoComponents()-1) === c;
-        if(!condition){this.restore(original);}
-        MethodFailedException.assertCondition(condition, "Component not correctly appended");
-    }
+    protected assertIsValidComponent(
+        operationType: "set" | "insert" | "append" | "remove",
+        component: string | null,
+        index: number | null,
+        original: string,
+        originalNoComponents: number
+    ): void {
+        const expectedNoComponents =
+            operationType === "set" ? originalNoComponents :
+            operationType === "insert" || operationType === "append" ? originalNoComponents + 1 :
+            operationType === "remove" ? originalNoComponents - 1 :
+            originalNoComponents;
+    
+        const stringArrayName = this.asStringArrayName();
+        const origArrayName = this.asStringArrayName(original);
 
-    protected assertRemove(i: number, c: string, original: StringName): void {
-        let condition = true;
-        condition = this.getNoComponents() === original.getNoComponents() - 1;
-        for(let j=0; j<i; j++){
-            condition = this.getComponent(j) === original.getComponent(j);
+        if (this.noComponents !== expectedNoComponents) {
+            this.reset(original, originalNoComponents);
+            MethodFailedException.assertCondition(false, "Component validation failed");
         }
-        for(let j=i; j<this.getNoComponents(); j++){
-            condition = this.getComponent(j) === original.getComponent(j+1);
-        }
-        if(!condition){this.restore(original);}
-        MethodFailedException.assertCondition(condition, "Component not correctly removed");
-    }
 
-    protected assertConcat(original: StringName, other:Name): void {
-        let condition = true;
-        for(let i=0; i<original.getNoComponents(); i++){
-            condition = this.getComponent(i) === original.getComponent(i);
+        for (let i_orig = 0, i_new = 0; i_orig < originalNoComponents; i_orig++, i_new++) {
+            if (operationType === "insert" && i_orig === index) {
+                if (stringArrayName[i_new] !== component) {
+                    this.reset(original, originalNoComponents);
+                    MethodFailedException.assertCondition(false, "Insert component validation failed");
+                }
+                i_new++; // Springe in der neuen Liste weiter
+            } else if (operationType === "remove" && i_orig === index) {
+                i_orig++; // Überspringe den removed Index in der alten Liste
+            } else if (operationType === "set" && i_orig === index) {
+                if (stringArrayName[i_new] !== component) {
+                    this.reset(original, originalNoComponents);
+                    MethodFailedException.assertCondition(false, "Set component validation failed");
+                }
+            } else if (stringArrayName[i_new] !== origArrayName[i_orig]) {
+                this.reset(original, originalNoComponents);
+                MethodFailedException.assertCondition(false, `Component mismatch after ${operationType}`);
+            }
         }
-        for(let i=0; i<other.getNoComponents(); i++){
-            condition = this.getComponent(i+original.getNoComponents()) === other.getComponent(i);
+
+        if (operationType === "append" && stringArrayName[originalNoComponents] !== component) {
+            this.reset(original, originalNoComponents);
+            MethodFailedException.assertCondition(false, "Append component validation failed");
         }
-        if(!condition){this.restore(original);}
-        MethodFailedException.assertCondition(condition, "Components not correctly concatenated");
     }
-
-    // class invariants
-    protected assertClassInvariants(){
-        super.assertClassInvariants();
-
-        //TODO
-    }
+    
 }

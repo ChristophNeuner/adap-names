@@ -1,201 +1,184 @@
+import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { InvalidStateException } from "../common/InvalidStateException";
+import { MethodFailedException } from "../common/MethodFailedException";
 import { DEFAULT_DELIMITER, ESCAPE_CHARACTER } from "../common/Printable";
 import { Name } from "./Name";
-import { IllegalArgumentException } from "../common/IllegalArgumentException";
-import { MethodFailedException } from "../common/MethodFailedException";
-import { InvalidStateException } from "../common/InvalidStateException";
 
 export abstract class AbstractName implements Name {
+  protected delimiter: string = DEFAULT_DELIMITER;
 
-    protected delimiter: string = DEFAULT_DELIMITER;
+  constructor(delimiter: string = DEFAULT_DELIMITER) {
+    this.assertHasValidDelimiter(delimiter);
+    if (delimiter !== undefined) {
+      this.delimiter = delimiter;
+    } else {
+      this.delimiter = DEFAULT_DELIMITER;
+    }
+    this.assertIsValidDelimiter(delimiter);
+  }
 
-    constructor(delimiter: string = DEFAULT_DELIMITER) {
-        
-        this.assertIsNotNullOrUndefined(delimiter);
-        this.assertIsValidDelimiter(delimiter);
+  // methods for assertions (class invariants)
+  protected assertAbstractNameIsValid() {
+    InvalidStateException.assertIsNotNullOrUndefined(this.delimiter);
+    this.assertIsValidDelimiter(this.delimiter);
+  }
 
-        this.delimiter = delimiter;
+  public clone(): Name {
+    const cloned = Object.create(Object.getPrototypeOf(this));
+    cloned.delimiter = this.getDelimiterCharacter();
 
-
-        this.assertCorrectDelimiter(delimiter);
-        this.assertClassInvariants();
+    for (let i = 0; i < this.getNoComponents(); i++) {
+      cloned.append(this.getComponent(i));
     }
 
-    public clone(): Name {
-        let clone = Object.create(this);
+    this.assertIsValidCloned(cloned);
+    return cloned;
+  }
 
-        this.assertCorrectClone(clone);
-        this.assertClassInvariants();
-        return clone;
+  public asString(delimiter?: string): string {
+    delimiter = delimiter ?? this.delimiter;
+    this.assertHasValidDelimiter(delimiter);
+
+    const components: string[] = [];
+
+    for (let i = 0; i < this.getNoComponents(); i++) {
+        const component = this.getComponent(i);   
+        components.push(component.replaceAll(`${ESCAPE_CHARACTER}${this.getDelimiterCharacter()}`, this.getDelimiterCharacter()));
     }
 
-    public asString(delimiter: string = this.delimiter): string {
-        this.assertIsNotNullOrUndefined(delimiter);
-        this.assertIsValidDelimiter(delimiter);
+    return components.join(delimiter);
+}
+  
+  public toString(): string {
+    return this.asDataString();
+  }
 
-        //remove escape chars
-        let result = "";
-        for(let i=0; i<this.getNoComponents(); i++){
-            result += this.removeEscapeCharactersBeforeDelimiters(this.getComponent(i), this.delimiter);
-            if(i < this.getNoComponents() - 1){
-                result += delimiter;
-            }
-        }
+  public asDataString(): string {
+    let components: string[] = [];
+    const escapeWithDelimiter = ESCAPE_CHARACTER + this.getDelimiterCharacter();
 
-
-        this.assertIsNotNullOrUndefined(result);
-        this.assertNotContainsEscapeChar(result);
-        this.assertClassInvariants();
-
-        return result;
+    for (let i = 0; i < this.getNoComponents(); i++) {
+      const component = this.getComponent(i)
+        .replaceAll(this.getDelimiterCharacter(), escapeWithDelimiter);
+      components.push(component);
     }
 
-    public toString(): string {
-        let dataString = this.asDataString();
-        this.assertIsNotNullOrUndefined(dataString);
-        this.assertClassInvariants();
-        return dataString;
+    const name = components.join(this.getDelimiterCharacter());
+
+    // Return a JSON-encoded object
+    const data = {
+      dataString: name,
+      delimiter: this.getDelimiterCharacter(),
+    };
+
+    return JSON.stringify(data); // To ensure it's a machine-readable JSON string
+  }
+
+  public isEqual(other: Name): boolean {
+    this.assertHasValidParameter(other, "other cannot be null or undefined");
+    if (this.getNoComponents() !== other.getNoComponents()) return false;
+
+    for (let i = 0; i < this.getNoComponents(); i++) {
+      if (this.getComponent(i) !== other.getComponent(i)) return false;
+    }
+    this.assertIsValidHashCode(other);
+    return true;
+  }
+
+  public getHashCode(): number {
+    let hashCode: number = 0;
+    const s: string = this.asDataString();
+    for (let i = 0; i < s.length; i++) {
+      let c = s.charCodeAt(i);
+      hashCode = (hashCode << 5) - hashCode + c;
+      hashCode |= 0;
+    }
+    return hashCode;
+  }
+
+  public isEmpty(): boolean {
+    return this.getNoComponents() === 0;
+  }
+
+  public getDelimiterCharacter(): string {
+    return this.delimiter;
+  }
+
+  abstract getNoComponents(): number;
+
+  abstract getComponent(i: number): string;
+  abstract setComponent(i: number, c: string): void;
+
+  abstract insert(i: number, c: string): void;
+  abstract append(c: string): void;
+  abstract remove(i: number): void;
+
+  public concat(other: Name): void {
+    this.assertHasValidParameter(other, "other cannot be null or undefined");
+    if (other.getDelimiterCharacter() !== this.getDelimiterCharacter()) {
+      throw new Error("Delimiters do not match");
     }
 
-    public asDataString(): string {
-        let components: string[] = [];
-        for (let i = 0; i < this.getNoComponents(); i++) {
-            components.push(this.getComponent(i));
-        }
-        let result = components.join(this.delimiter);
-
-
-        this.assertIsNotNullOrUndefined(result);
-        this.assertClassInvariants();
-        return result;
+    let copy = Object.create(Object.getPrototypeOf(this));
+    copy.delimiter = this.getDelimiterCharacter();
+    for (let i = 0; i < this.getNoComponents(); i++) {
+      copy.append(this.getComponent(i));
     }
 
-    public isEqual(other: Name): boolean {
-        this.assertIsNotNullOrUndefined(other);
-
-        if(this.getHashCode() !== other.getHashCode() || this.getNoComponents() !== other.getNoComponents() || this.getDelimiterCharacter() !== other.getDelimiterCharacter()){
-            return false;
-        }
-        for (let i = 0; i < this.getNoComponents(); i++) {
-            if (this.getComponent(i) !== other.getComponent(i)) {
-                return false;
-            }
-        }
-
-        this.assertClassInvariants();
-        return this.asDataString() === other.asDataString();
+    for (let i = 0; i <= other.getNoComponents(); ++i) {
+      this.append(other.getComponent(i));
     }
 
-    public getHashCode(): number {
-        let hashCode: number = 0;
-        const s: string = this.asDataString();
-        for (let i: number = 0; i < s.length; i++) {
-            let c: number = s.charCodeAt(i);
-            hashCode = (hashCode << 5) - hashCode + c;
-            hashCode |= 0;
-        }
+    this.assertIsValidConcatComponent(copy, other);
+  }
 
+  // methods for assertions (preconditions)
+  protected assertHasValidDelimiter(delimiter: string): void {
+    InvalidStateException.assertIsNotNullOrUndefined(
+      delimiter,
+      "delimiter cannot be null or undefined"
+    );
+    const cond = delimiter.length === 1 && delimiter !== ESCAPE_CHARACTER;
+    InvalidStateException.assertCondition(
+      cond,
+      "delimiter must be a single char and cannot be the escape character"
+    );
+  }
 
-        this.assertIsNotNullOrUndefined(hashCode);
-        this.assertClassInvariants();
-        return hashCode;
-    }
+  protected assertHasValidParameter(
+    o: Object | null,
+    msg: string = "null or undefined"
+  ): void {
+    InvalidStateException.assertIsNotNullOrUndefined(o, msg);
+  }
 
-    public isEmpty(): boolean {
-        this.assertClassInvariants();
-        return this.getNoComponents() === 0;
-    }
+  // methods for assertions (post-conditions)
+  protected assertIsValidDelimiter(delimiter: string | undefined): void {
+    const cond = (delimiter ? delimiter : DEFAULT_DELIMITER) === this.delimiter;
+    MethodFailedException.assertCondition(cond, "Name validation failed");
+  }
 
-    public getDelimiterCharacter(): string {
-        this.assertClassInvariants();
-        return this.delimiter;
-    }
+  protected assertIsValidCloned(cloned: Name): void {
+    MethodFailedException.assertIsNotNullOrUndefined(
+      cloned,
+      "clone is null or undefined"
+    );
+    const cond = this.isEqual(cloned) && this !== cloned;
+    MethodFailedException.assertCondition(cond, "Clone validation failed");
+  }
 
-    abstract getNoComponents(): number;
+  protected assertIsValidHashCode(other: Name): void {
+    const cond = other.getHashCode() === this.getHashCode();
+    MethodFailedException.assertCondition(cond, "HashCode validation failed");
+  }
 
-    abstract getComponent(i: number): string;
-    abstract setComponent(i: number, c: string): void;
-
-    abstract insert(i: number, c: string): void;
-    abstract append(c: string): void;
-    abstract remove(i: number): void;
-    abstract concat(other: Name): void;
-
-
-    //helper methods
-    protected removeEscapeCharactersBeforeDelimiters(s: string, delimiter: string): string {
-        for(let i=0; i<s.length-1; i++){
-            if(s[i] === ESCAPE_CHARACTER && s[i+1] === delimiter){
-                s = s.substring(0, i) + s.substring(i+1);
-            }
-        }
-        return s;
-    }
-
-    //pre-conditions
-    protected assertIsNotNullOrUndefined(other: Object): void {
-        let condition: boolean = !IllegalArgumentException.isNullOrUndefined(other);
-        IllegalArgumentException.assertCondition(condition, "null or undefined argument");        
-    }
-
-    protected assertIsValidDelimiter(delimiter: string): void {
-        let condition: boolean = delimiter.length === 1 && delimiter !== ESCAPE_CHARACTER;
-        IllegalArgumentException.assertCondition(condition, "Delimiter must be a single character and not the escape character");
-    }
-
-    protected assertOtherNameIsValid(other: Name): void {
-        IllegalArgumentException.assertIsNotNullOrUndefined(other, "Other name is null or undefined");
-        IllegalArgumentException.assertCondition(other.getDelimiterCharacter() === this.delimiter, "Delimiters do not match");
-        for(let i=0; i<other.getNoComponents(); i++){
-            this.assertIsValidComponent(other.getComponent(i));
-        }
-    }
-
-    //checks one single component
-    protected assertIsValidComponent(c: string): void {
-        IllegalArgumentException.assertIsNotNullOrUndefined(c, "Component is null or undefined");
-        for(let i=0; i<c.length; i++){
-            let char: string = c[i];
-            let condition: boolean = (char === this.delimiter && (i===0 || c[i-1] !== ESCAPE_CHARACTER));
-            IllegalArgumentException.assertCondition(!condition, "Delimiter without preceding escape char is not allowed in component");
-        }
-    }
-
-    protected assertIsValidIndex(i: number): void {
-        IllegalArgumentException.assertIsNotNullOrUndefined(i, "Index is null or undefined");
-        let condition: boolean = !(i < 0 || i >= this.getNoComponents());
-        IllegalArgumentException.assertCondition(condition, "Index out of bounds");
-    }
-
-    protected assertIsValidIndexForInsert(i: number): void {
-        IllegalArgumentException.assertIsNotNullOrUndefined(i, "Index is null or undefined");
-        let condition: boolean = !(i < 0 || i > this.getNoComponents());
-        IllegalArgumentException.assertCondition(condition, "Index out of bounds");
-    }
-
-
-    // post-conditions
-    protected assertCorrectDelimiter(delimiter: string){
-        let condition: boolean = this.delimiter === delimiter;
-        MethodFailedException.assertCondition(condition, "Delimiter not set correctly");
-    }
-
-    protected assertCorrectClone(clone: Name){
-        let condition: boolean = this.asDataString() === clone.asDataString();
-        MethodFailedException.assertCondition(condition, "Clone not equal to original");
-    }
-
-    protected assertNotContainsEscapeChar(s: string){
-        let condition: boolean = s.indexOf(ESCAPE_CHARACTER) === -1;
-        MethodFailedException.assertCondition(condition, "String contains delimiter");
-    }
-    
-    // class invariants
-    protected assertClassInvariants(){
-        InvalidStateException.assertIsNotNullOrUndefined(this.delimiter, "Delimiter null or undefined");
-
-        let condition: boolean = true;
-        condition = this.delimiter.length === 1;
-        condition = this.delimiter !== ESCAPE_CHARACTER;
-        InvalidStateException.assertCondition(condition, "Delimiter not correctly set");
-    }
+  protected assertIsValidConcatComponent(copy: Name, other: Name): void {
+    const cond =
+      this.getNoComponents() ===
+      copy.getNoComponents() + other.getNoComponents();
+    MethodFailedException.assertCondition(
+      cond,
+      "Concat Components validation failed"
+    );
+  }
 }
