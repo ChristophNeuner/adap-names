@@ -16,6 +16,7 @@ export class InvalidStateException extends Exception {
 
     constructor(m: string, t?: Exception) {
         super(m, t);
+        console.log("InvalidStateException: " + m + t);
     }
     
 }

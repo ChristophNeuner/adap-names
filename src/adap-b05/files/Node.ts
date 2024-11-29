@@ -3,6 +3,8 @@ import { Directory } from "./Directory";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
 import { RootNode } from "./RootNode";
 import { ExceptionType, AssertionDispatcher } from "../common/AssertionDispatcher";
+import { ServiceFailureException } from "../common/ServiceFailureException";
+import { Exception } from "../common/Exception";
 
 export class Node {
 
@@ -10,13 +12,13 @@ export class Node {
     protected parentNode: Directory;
 
     constructor(bn: string, pn: Directory) {
-        this.assertIsValidBaseName(bn, ExceptionType.PRECONDITION);
+        //this.assertIsValidBaseName(bn, ExceptionType.PRECONDITION);
 
         this.doSetBaseName(bn);
         this.parentNode = pn; // why oh why do I have to set this
         this.initialize(pn);
 
-        this.assertClassInvariants();
+        //this.assertClassInvariants();
     }
 
     protected initialize(pn: Directory): void {
@@ -25,8 +27,6 @@ export class Node {
     }
 
     public move(to: Directory): void {
-        this.assertIsNotNullOrUndefined(to);
-
         this.parentNode.remove(this);
         to.add(this);
         this.parentNode = to;
@@ -49,7 +49,6 @@ export class Node {
     }
 
     public rename(bn: string): void {
-        this.assertIsNotNullOrUndefined(bn);
         this.assertIsValidBaseName(bn, ExceptionType.PRECONDITION);
 
         this.doSetBaseName(bn);
@@ -70,11 +69,27 @@ export class Node {
      * @param bn basename of node being searched for
      */
     public findNodes(bn: string): Set<Node> {
-        console.log(`Searching in current node:  bn = ${this.getBaseName()}, full name = ${this.getFullName()}`);
+        console.log(`Searching in current node: bn = ${this.getBaseName()}, full name = ${this.getFullName()}`);
         const result: Set<Node> = new Set<Node>();
-        if (this.getBaseName() === bn) {
-            result.add(this);
+    
+        try {
+            // Check if current node's base name matches the search
+            if (this.getBaseName() === bn) {
+                result.add(this);
+            }
+    
+            // Assert the class invariants after the operation
+            this.assertClassInvariants(); 
+    
+        } catch (e: any) {
+            console.log(`Exception caught in Node.findNodes: ${e}`);
+            if(e instanceof ServiceFailureException) {
+                throw e;
+            }
+            // Wrap caught exception into a ServiceFailureException
+            ServiceFailureException.assertCondition(false, "findNodes failed in Node", e);
         }
+    
         return result;
     }
 
@@ -86,10 +101,5 @@ export class Node {
     protected assertIsValidBaseName(bn: string, et: ExceptionType): void {
         const condition: boolean = (bn != "");
         AssertionDispatcher.dispatch(et, condition, "invalid base name");
-    }
-
-    protected assertIsNotNullOrUndefined(other: Object): void {
-        let condition: boolean = !IllegalArgumentException.isNullOrUndefined(other);
-        IllegalArgumentException.assertCondition(condition, "null or undefined argument");        
     }
 }

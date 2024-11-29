@@ -15,5 +15,4 @@ export class BuggyFile extends File {
         this.baseName = "";
         return super.doGetBaseName();
     }
-
 }

@@ -17,6 +17,7 @@ export abstract class Exception extends Error {
         if (t != undefined) {
             this.trigger = t;
         }
+        console.log("trigger: " + this.trigger);
     }
 
     public hasTrigger(): boolean {

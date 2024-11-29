@@ -7,6 +7,7 @@ import { Exception } from "./Exception";
 export class ServiceFailureException extends Exception {
 
     static assertCondition(c: boolean, m: string = "service failed", t?: Exception): void {
+        console.log(`ServiceFailureException.assertCondition: c = ${c}, m = ${m}, t = ${t}`);
         if (!c) throw new ServiceFailureException(m, t);
     }
 
