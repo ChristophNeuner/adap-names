@@ -1,6 +1,7 @@
 import { Node } from "./Node";
 import { Directory } from "./Directory";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { MethodFailedException } from "../common/MethodFailedException";
 
 enum FileState {
     OPEN,
@@ -19,6 +20,29 @@ export class File extends Node {
     public open(): void {
         this.assertIsInState(FileState.CLOSED);
         // do something
+    }
+
+    public read(noBytes: number): Int8Array {
+        let result: Int8Array = new Int8Array(noBytes);
+        // do something
+
+        let tries: number = 0;
+        for (let i: number = 0; i < noBytes; i++) {
+            try {
+                result[i] = this.readNextByte();
+            } catch(ex) {
+                tries++;
+                if (ex instanceof MethodFailedException) {
+                    // Oh no! What @todo?!
+                }
+            }
+        }
+
+        return result;
+    }
+
+    protected readNextByte(): number {
+        return 0; // @todo
     }
 
     public close(): void {

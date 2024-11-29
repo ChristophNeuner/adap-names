@@ -1,6 +1,7 @@
 import { Node } from "./Node";
 import { Directory } from "./Directory";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
+import { ExceptionType } from "../common/AssertionDispatcher";
 
 export class Link extends Node {
 
@@ -29,10 +30,12 @@ export class Link extends Node {
     }
 
     public rename(bn: string): void {
-        this.assertIsValidName(bn);
+        this.assertIsValidBaseName(bn, ExceptionType.PRECONDITION);
 
         const target = this.ensureTargetNode(this.targetNode);
         target.rename(bn);
+
+        this.assertClassInvariants();
     }
 
     protected ensureTargetNode(target: Node | null): Node {

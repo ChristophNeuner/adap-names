@@ -2,6 +2,7 @@ import { Name } from "../names/Name";
 import { Directory } from "./Directory";
 import { IllegalArgumentException } from "../common/IllegalArgumentException";
 import { RootNode } from "./RootNode";
+import { ExceptionType, AssertionDispatcher } from "../common/AssertionDispatcher";
 
 export class Node {
 
@@ -9,12 +10,18 @@ export class Node {
     protected parentNode: Directory;
 
     constructor(bn: string, pn: Directory) {
-        this.assertIsNotNullOrUndefined(bn);
-        this.assertIsNotNullOrUndefined(pn);
-        this.assertIsValidName(bn);
+        this.assertIsValidBaseName(bn, ExceptionType.PRECONDITION);
 
         this.doSetBaseName(bn);
+        this.parentNode = pn; // why oh why do I have to set this
+        this.initialize(pn);
+
+        this.assertClassInvariants();
+    }
+
+    protected initialize(pn: Directory): void {
         this.parentNode = pn;
+        this.parentNode.add(this);
     }
 
     public move(to: Directory): void {
@@ -22,6 +29,9 @@ export class Node {
 
         this.parentNode.remove(this);
         to.add(this);
+        this.parentNode = to;
+
+        this.assertClassInvariants();
     }
 
     public getFullName(): Name {
@@ -40,9 +50,11 @@ export class Node {
 
     public rename(bn: string): void {
         this.assertIsNotNullOrUndefined(bn);
-        this.assertIsValidName(bn);
+        this.assertIsValidBaseName(bn, ExceptionType.PRECONDITION);
 
         this.doSetBaseName(bn);
+
+        this.assertClassInvariants();
     }
 
     protected doSetBaseName(bn: string): void {
@@ -53,36 +65,26 @@ export class Node {
         return this.parentNode;
     }
 
-    //assertion methods
+    /**
+     * Returns all nodes in the tree that match bn
+     * @param bn basename of node being searched for
+     */
+    public findNodes(bn: string): Set<Node> {
+        throw new Error("needs implementation or deletion");
+    }
+
+    protected assertClassInvariants(): void {
+        const bn: string = this.doGetBaseName();
+        this.assertIsValidBaseName(bn, ExceptionType.CLASS_INVARIANT);
+    }
+
+    protected assertIsValidBaseName(bn: string, et: ExceptionType): void {
+        const condition: boolean = (bn != "");
+        AssertionDispatcher.dispatch(et, condition, "invalid base name");
+    }
+
     protected assertIsNotNullOrUndefined(other: Object): void {
         let condition: boolean = !IllegalArgumentException.isNullOrUndefined(other);
         IllegalArgumentException.assertCondition(condition, "null or undefined argument");        
-    }
-
-    protected assertIsValidName(name: string): void {
-        let condition: boolean = true;
-        const disallowedPattern = /[\/\0]/; // Matches '/' or null character '\0'
-
-        if (this instanceof RootNode) {
-            // Only the RootNode is allowed to have an empty base name
-            if(name === ""){
-                return;
-            }else{
-                condition = false;
-            }
-        }
-
-        if(name.length === 0){
-            condition = false;
-        }
-        // Check for empty or whitespace-only string
-        if (!name || name.trim() === '') {
-            condition = false;
-        }
-        // Check for disallowed characters
-        if (disallowedPattern.test(name)) {
-            condition = false;
-        }
-        IllegalArgumentException.assertCondition(condition, "invalid name");
     }
 }
