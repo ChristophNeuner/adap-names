@@ -70,6 +70,7 @@ export class Node {
      */
     public findNodes(bn: string): Set<Node> {
         console.log(`Searching in current node: bn = ${this.getBaseName()}, full name = ${this.getFullName()}`);
+        AssertionDispatcher.dispatch(ExceptionType.PRECONDITION, bn !== "" && bn !== null, "Invalid base name");
         const result: Set<Node> = new Set<Node>();
     
         try {

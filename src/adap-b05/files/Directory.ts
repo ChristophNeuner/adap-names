@@ -27,6 +27,7 @@ export class Directory extends Node {
 
     public override findNodes(bn: string): Set<Node> {
         console.log(`Directory.findNodes(${bn})`);
+        AssertionDispatcher.dispatch(ExceptionType.PRECONDITION, bn !== "" && bn !== null, "Invalid base name");
         const result: Set<Node> = new Set();
     
         try {
