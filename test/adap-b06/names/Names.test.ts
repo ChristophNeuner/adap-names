@@ -27,15 +27,31 @@ describe("Equality test", () => {
 
 describe("mutation methods", () => {
     it("concat", () => {
-      let name1: StringName = new StringName("oss.cs.fau.de", ".");
-      let name2: StringName = new StringName("oss.cs.fau.de", ".");
+      let name1: StringName = new StringName("oss.cs", ".");
+      let name2: StringName = new StringName("fau.de", ".");
       try{
         let name3: Name = name1.concat(name2);
-
+        console.log(name3.asString());
         expect(name3.getComponent(0)).toBe("oss");
         expect(name3.getComponent(1)).toBe("cs");
         expect(name3.getComponent(2)).toBe("fau");
         expect(name3.getComponent(3)).toBe("de");
+      }catch(e){
+        console.log(e);
+        throw e;
+      }
+    });
+    it("append", () => {
+      let name1: StringName = new StringName("oss.cs.fau.de", ".");
+      try{
+        let name2 = name1.append("test");
+        expect(name1.getNoComponents()).toBe(4);
+        expect(name2.getNoComponents()).toBe(5);
+        expect(name2.getComponent(4)).toBe("test");
+        console.log(name1.asString());
+        console.log(name2.asString());
+        expect(name1.asString()).toBe("oss.cs.fau.de");
+        expect(name2.asString()).toBe("oss.cs.fau.de.test");
       }catch(e){
         console.log(e);
         throw e;
