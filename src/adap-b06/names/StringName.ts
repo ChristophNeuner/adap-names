@@ -34,11 +34,9 @@ export class StringName extends AbstractName {
     // methods for assertions (class invariants)
     protected assertStringNameIsValid(): void {
         super.assertAbstractNameIsValid();
-        InvalidStateException.assertIsNotNullOrUndefined(this.name, "Name cannot be null or undefined");
-        InvalidStateException.assertIsNotNullOrUndefined(this.noComponents, "noComponents cannot be null or undefined");
-
-        const cond = this.noComponents === this.getNoComponents();
-        InvalidStateException.assertCondition(cond, "noComponents is not === to the noComponents in Name");
+        InvalidStateException.assert(this.isNotNullOrUndefined(this.name), "Name cannot be null or undefined");
+        InvalidStateException.assert(this.isNotNullOrUndefined(this.noComponents), "noComponents cannot be null or undefined");
+        InvalidStateException.assert(this.noComponents === this.getNoComponents(), "noComponents is not === to the noComponents in Name");
     }
 
     public getNoComponents(): number {
@@ -125,15 +123,13 @@ export class StringName extends AbstractName {
 
     // methods for assertions (preconditions)
     protected assertHasValidIndex(i: number): void {
-        IllegalArgumentException.assertIsNotNullOrUndefined(i);
-        const cond = (i >= 0 && i < this.getNoComponents());
-        IllegalArgumentException.assertCondition(cond, "Index is out of bounds");
+        IllegalArgumentException.assert(this.isNotNullOrUndefined(i));
+        IllegalArgumentException.assert((i >= 0 && i < this.getNoComponents()), "Index is out of bounds");
     }
 
     // methods for assertions (post-conditions)
     protected assertIsValidNameState(name: string): void {
-        const cond = this.name === name;
-        MethodFailedException.assertCondition(cond, "StringName validation failed");
+        MethodFailedException.assert(this.name === name, "StringName validation failed");
     }
 
     protected assertIsValidComponent(
@@ -154,14 +150,14 @@ export class StringName extends AbstractName {
 
         if (this.noComponents !== expectedNoComponents) {
             this.reset(original, originalNoComponents);
-            MethodFailedException.assertCondition(false, "Component validation failed");
+            MethodFailedException.assert(false, "Component validation failed");
         }
 
         for (let i_orig = 0, i_new = 0; i_orig < originalNoComponents; i_orig++, i_new++) {
             if (operationType === "insert" && i_orig === index) {
                 if (stringArrayName[i_new] !== component) {
                     this.reset(original, originalNoComponents);
-                    MethodFailedException.assertCondition(false, "Insert component validation failed");
+                    MethodFailedException.assert(false, "Insert component validation failed");
                 }
                 i_new++; // Springe in der neuen Liste weiter
             } else if (operationType === "remove" && i_orig === index) {
@@ -169,17 +165,17 @@ export class StringName extends AbstractName {
             } else if (operationType === "set" && i_orig === index) {
                 if (stringArrayName[i_new] !== component) {
                     this.reset(original, originalNoComponents);
-                    MethodFailedException.assertCondition(false, "Set component validation failed");
+                    MethodFailedException.assert(false, "Set component validation failed");
                 }
             } else if (stringArrayName[i_new] !== origArrayName[i_orig]) {
                 this.reset(original, originalNoComponents);
-                MethodFailedException.assertCondition(false, `Component mismatch after ${operationType}`);
+                MethodFailedException.assert(false, `Component mismatch after ${operationType}`);
             }
         }
 
         if (operationType === "append" && stringArrayName[originalNoComponents] !== component) {
             this.reset(original, originalNoComponents);
-            MethodFailedException.assertCondition(false, "Append component validation failed");
+            MethodFailedException.assert(false, "Append component validation failed");
         }
     }
     

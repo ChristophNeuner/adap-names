@@ -17,12 +17,6 @@ export abstract class AbstractName implements Name {
     this.assertIsValidDelimiter(delimiter);
   }
 
-  // methods for assertions (class invariants)
-  protected assertAbstractNameIsValid() {
-    InvalidStateException.assertIsNotNullOrUndefined(this.delimiter);
-    this.assertIsValidDelimiter(this.delimiter);
-  }
-
   public clone(): Name {
     const cloned = Object.create(Object.getPrototypeOf(this));
     cloned.delimiter = this.getDelimiterCharacter();
@@ -133,50 +127,53 @@ export abstract class AbstractName implements Name {
   }
 
   // methods for assertions (preconditions)
+  protected isNotNullOrUndefined(o: Object | null): boolean {
+    return !(o === null || o === undefined);
+  }
+
+  protected assertAbstractNameIsValid() {
+    InvalidStateException.assert(this.isNotNullOrUndefined(this.delimiter), "delimiter cannot be null or undefined");
+    this.assertIsValidDelimiter(this.delimiter);
+  }
+
   protected assertHasValidDelimiter(delimiter: string): void {
-    InvalidStateException.assertIsNotNullOrUndefined(
-      delimiter,
+    InvalidStateException.assert(
+      this.isNotNullOrUndefined(delimiter),
       "delimiter cannot be null or undefined"
     );
     const cond = delimiter.length === 1 && delimiter !== ESCAPE_CHARACTER;
-    InvalidStateException.assertCondition(
+    InvalidStateException.assert(
       cond,
       "delimiter must be a single char and cannot be the escape character"
     );
   }
 
-  protected assertHasValidParameter(
-    o: Object | null,
-    msg: string = "null or undefined"
-  ): void {
-    InvalidStateException.assertIsNotNullOrUndefined(o, msg);
+  protected assertHasValidParameter(o: Object | null, msg: string = "null or undefined"): void {
+    InvalidStateException.assert(this.isNotNullOrUndefined(o), msg);
   }
 
   // methods for assertions (post-conditions)
   protected assertIsValidDelimiter(delimiter: string | undefined): void {
     const cond = (delimiter ? delimiter : DEFAULT_DELIMITER) === this.delimiter;
-    MethodFailedException.assertCondition(cond, "Name validation failed");
+    MethodFailedException.assert(cond, "Name validation failed");
   }
 
   protected assertIsValidCloned(cloned: Name): void {
-    MethodFailedException.assertIsNotNullOrUndefined(
-      cloned,
-      "clone is null or undefined"
-    );
+    MethodFailedException.assert(this.isNotNullOrUndefined(cloned), "clone is null or undefined");
     const cond = this.isEqual(cloned) && this !== cloned;
-    MethodFailedException.assertCondition(cond, "Clone validation failed");
+    MethodFailedException.assert(cond, "Clone validation failed");
   }
 
   protected assertIsValidHashCode(other: Name): void {
     const cond = other.getHashCode() === this.getHashCode();
-    MethodFailedException.assertCondition(cond, "HashCode validation failed");
+    MethodFailedException.assert(cond, "HashCode validation failed");
   }
 
   protected assertIsValidConcatComponent(copy: Name, other: Name): void {
     const cond =
       this.getNoComponents() ===
       copy.getNoComponents() + other.getNoComponents();
-    MethodFailedException.assertCondition(
+    MethodFailedException.assert(
       cond,
       "Concat Components validation failed"
     );

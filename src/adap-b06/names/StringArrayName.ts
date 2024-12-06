@@ -26,14 +26,14 @@ export class StringArrayName extends AbstractName {
   // methods for assertions (class invariants)
   protected assertStringArrayNameisValid() {
     super.assertAbstractNameIsValid();
-    InvalidStateException.assertIsNotNullOrUndefined(
-      this.components,
+    InvalidStateException.assert(
+      this.isNotNullOrUndefined(this.components),
       "Components cannot be null or undefined"
     );
 
     this.components.forEach((c) => {
-      InvalidStateException.assertIsNotNullOrUndefined(
-        c,
+      InvalidStateException.assert(
+        this.isNotNullOrUndefined(c),
         "A component in components is null or undefined"
       );
     });
@@ -88,29 +88,19 @@ export class StringArrayName extends AbstractName {
 
   // methods for assertions (preconditions)
   protected assertHasValidIndex(i: number): void {
-    IllegalArgumentException.assertIsNotNullOrUndefined(i);
-    const cond = i >= 0 && i < this.getNoComponents();
-    IllegalArgumentException.assertCondition(cond, "Index is out of bounds");
+    IllegalArgumentException.assert(this.isNotNullOrUndefined(i));
+    IllegalArgumentException.assert(i >= 0 && i < this.getNoComponents(), "Index is out of bounds");
   }
 
   protected assertHasValidIndexForInsert(i: number): void {
-    IllegalArgumentException.assertIsNotNullOrUndefined(i);
-    const cond = i >= 0 && i <= this.getNoComponents();
-    IllegalArgumentException.assertCondition(
-      cond,
-      "Index is out of bounds for insertion"
-    );
+    IllegalArgumentException.assert(this.isNotNullOrUndefined(i));
+    IllegalArgumentException.assert(i >= 0 && i <= this.getNoComponents(),"Index is out of bounds for insertion");
   }
 
   // methods for assertions (post-conditions)
   protected assertIsValidStringArrayNameState(components: String[]): void {
-    const cond = components.every(
-      (comp, index) => comp === this.components[index]
-    );
-    MethodFailedException.assertCondition(
-      cond,
-      "StringArrayName validation failed"
-    );
+    const cond = components.every((comp, index) => comp === this.components[index]);
+    MethodFailedException.assert(cond, "StringArrayName validation failed");
   }
 
   protected assertIsValidComponent(
@@ -131,24 +121,14 @@ export class StringArrayName extends AbstractName {
 
     if (this.getNoComponents() !== expectedNoComponents) {
       this.components = [...originalComponents];
-      MethodFailedException.assertCondition(
-        false,
-        `Component operation "${operationType}" failed: Invalid component count`
-      );
+      MethodFailedException.assert(false, `Component operation "${operationType}" failed: Invalid component count`);
     }
 
-    for (
-      let i_orig = 0, i_new = 0;
-      i_orig < originalNoComponents;
-      i_orig++, i_new++
-    ) {
+    for (let i_orig = 0, i_new = 0; i_orig < originalNoComponents; i_orig++, i_new++) {
       if (operationType === "insert" && i_orig === index) {
         if (this.components[i_new] !== component) {
           this.components = [...originalComponents];
-          MethodFailedException.assertCondition(
-            false,
-            "Insert validation failed"
-          );
+          MethodFailedException.assert(false, "Insert validation failed");
         }
         i_new++; // Springe in der neuen Liste wetier
       } else if (operationType === "remove" && i_orig === index) {
@@ -156,23 +136,17 @@ export class StringArrayName extends AbstractName {
       } else if (operationType === "set" && i_orig === index) {
         if (this.components[i_new] !== component) {
             this.components = [...originalComponents];
-            MethodFailedException.assertCondition(false, "Set validation failed");
+            MethodFailedException.assert(false, "Set validation failed");
         }
       } else if (this.components[i_new] !== originalComponents[i_orig]) {
         this.components = [...originalComponents];
-        MethodFailedException.assertCondition(
-          false,
-          `Component operation "${operationType}" failed: Component mismatch`
-        );
+        MethodFailedException.assert(false, `Component operation "${operationType}" failed: Component mismatch`);
       }
     }
 
-    if (
-      operationType === "append" &&
-      this.components[originalNoComponents] !== component
-    ) {
+    if (operationType === "append" && this.components[originalNoComponents] !== component) {
       this.components = [...originalComponents];
-      MethodFailedException.assertCondition(false, "Append validation failed");
+      MethodFailedException.assert(false, "Append validation failed");
     }
   }
 }
