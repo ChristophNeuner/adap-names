@@ -1,5 +1,6 @@
 import { Exception } from "./Exception";
 import { InvalidStateException } from "./InvalidStateException";
+import { InvalidStateException } from "./InvalidStateException";
 
 /**
  * An IllegalArgumentException signals an invalid argument.
@@ -23,5 +24,6 @@ export class IllegalArgumentException extends Exception {
         InvalidStateException.assertCondition(this.hasTrigger());
         return super.getTrigger();
     }
+
 
 }

@@ -7,7 +7,7 @@ export class StringName extends AbstractName {
     protected length: number = 0;
     protected indices: number[] = []; //indices of delimiter characters
 
-    constructor(other: string, delimiter?: string) {
+    constructor(source: string, delimiter?: string) {
         super();
         if (delimiter !== undefined && delimiter !== null) {
             this.delimiter = delimiter;

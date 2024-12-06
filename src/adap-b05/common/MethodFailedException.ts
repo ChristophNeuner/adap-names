@@ -16,6 +16,8 @@ export class MethodFailedException extends Exception {
 
     constructor(m: string, t?: Exception) {
         super(m, t);
+    constructor(m: string, t?: Exception) {
+        super(m, t);
     }
     
 }

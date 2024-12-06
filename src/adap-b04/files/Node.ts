@@ -14,7 +14,13 @@ export class Node {
         this.assertIsValidName(bn);
 
         this.doSetBaseName(bn);
+        this.parentNode = pn; // why oh why do I have to set this
+        this.initialize(pn);
+    }
+
+    protected initialize(pn: Directory): void {
         this.parentNode = pn;
+        this.parentNode.addChildNode(this);
     }
 
     public move(to: Directory): void {
@@ -49,7 +55,7 @@ export class Node {
         this.baseName = bn;
     }
 
-    public getParentNode(): Node {
+    public getParentNode(): Directory {
         return this.parentNode;
     }
 

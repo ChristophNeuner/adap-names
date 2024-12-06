@@ -28,6 +28,7 @@ export abstract class AbstractName implements Name {
 
     public toString(): string {
         return this.asDataString();
+        return this.asDataString();
     }
 
     /**

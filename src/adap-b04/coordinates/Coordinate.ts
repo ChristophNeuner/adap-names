@@ -1,6 +1,5 @@
 import { Equality } from "../common/Equality";
 import { Cloneable } from "../common/Cloneable";
-import { Printable } from "../common/Printable";
 
 /**
  * A coordinate (here) is a point in a two-dimensional coordinate system.
@@ -30,7 +29,7 @@ export interface Coordinate extends Cloneable, Equality {
 
     /**
      * Gets and sets r and phi in a two-dimensional polar coordinate system
-     * Expects that 0 <= phi < 2*Math.PI
+     * Expects that r >= 0 and 0 <= phi < 2*Math.PI
      */
     getR(): number;
     setR(r: number): void;

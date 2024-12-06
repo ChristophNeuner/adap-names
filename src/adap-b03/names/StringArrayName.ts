@@ -5,7 +5,7 @@ export class StringArrayName extends AbstractName {
 
     protected components: string[] = [];
 
-    constructor(other: string[], delimiter?: string) {
+    constructor(source: string[], delimiter?: string) {
         super();
         //Prof. Riehle: Ich denke, eine leeres string array zu uebergeben sollte nicht erlaubt sein (im Constructor).
         //https://www.studon.fau.de/studon/ilias.php?ref_id=4447999&cmdClass=ilobjforumgui&thr_pk=385940&page=0&cmd=viewThread&cmdNode=13z:tp&baseClass=ilrepositorygui

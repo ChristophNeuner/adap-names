@@ -12,6 +12,7 @@ export abstract class Exception extends Error {
     }
 
     constructor(m: string, t?: Exception) {
+    constructor(m: string, t?: Exception) {
         super(m);
 
         if (t != undefined) {
