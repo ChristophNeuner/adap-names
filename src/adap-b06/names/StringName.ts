@@ -49,58 +49,54 @@ export class StringName extends AbstractName {
         return component;
     }
 
-    public setComponent(i: number, c: string) {
+    public setComponent(i: number, c: string): Name {
         this.assertHasValidIndex(i);
         this.assertHasValidParameter(c);
 
-        const original = this.name;
-        const noComponents = this.noComponents;
+        let deepCopy = structuredClone(this);
+        let deepCopyComponents = deepCopy.asStringArrayName();
+        deepCopyComponents[i] = c;
+        deepCopy.name = deepCopy.asStringName(deepCopyComponents); 
 
-        const components = this.asStringArrayName();
-        components[i] = c;
-        this.name = this.asStringName(components); 
-
-        this.assertIsValidComponent("set", c, i, original, noComponents);
+        deepCopy.assertIsValidComponent("set", c, i, this.name, this.getNoComponents());
+        return deepCopy;
     }
 
-    public insert(i: number, c: string) {
+    public insert(i: number, c: string): Name {
         this.assertHasValidIndex(i);
         this.assertHasValidParameter(c);
 
-        const original = this.name;
-        const noComponents = this.noComponents;
+        let deepCopy = structuredClone(this);
+        let deepCopyComponents = deepCopy.asStringArrayName();
+        deepCopyComponents.splice(i, 0, c);
+        deepCopy.name = this.asStringName(deepCopyComponents);
+        deepCopy.noComponents += 1;
 
-        let components = this.asStringArrayName();
-        components.splice(i, 0, c);
-        this.name = this.asStringName(components);
-        this.noComponents += 1;
-
-        this.assertIsValidComponent("insert", c, i, original, noComponents);
+        deepCopy.assertIsValidComponent("insert", c, i, this.name, this.getNoComponents());
+        return deepCopy;
     }
 
-    public append(c: string) {
+    public append(c: string): Name {
         this.assertHasValidParameter(c);
-        const original = this.name;
-        const noComponents = this.noComponents;
+        
+        let deepCopyString = structuredClone(this.name);
+        deepCopyString += this.getDelimiterCharacter() + c;
+        let result = new StringName(deepCopyString, this.getDelimiterCharacter());
 
-        this.name += this.getDelimiterCharacter() + c;
-        this.noComponents += 1;
-
-        this.assertIsValidComponent("append", c, null, original, noComponents);
+        result.assertIsValidComponent("append", c, null, this.name, this.getNoComponents());
+        return result;
     }
 
-    public remove(i: number) {
+    public remove(i: number):Name {
         this.assertHasValidIndex(i);
 
-        const original = this.name;
-        const noComponents = this.noComponents;
-
-        let components = this.asStringArrayName();
-        components.splice(i, 1);
-        this.name = this.asStringName(components);
-        this.noComponents -= 1;
-
-        this.assertIsValidComponent("remove", null, i, original, noComponents);
+        let deepCopyString = structuredClone(this.name);
+        let deepCopyComponents = this.asStringArrayName(deepCopyString);
+        deepCopyComponents.splice(i, 1);
+        let result = new StringName(this.asStringName(deepCopyComponents), this.getDelimiterCharacter());
+        
+        result.assertIsValidComponent("remove", null, i, this.name, this.getNoComponents());
+        return result;
     }
 
     protected splitComponents(str: string, delimiter: string = this.getDelimiterCharacter()): string[] {
@@ -149,14 +145,14 @@ export class StringName extends AbstractName {
         const origArrayName = this.asStringArrayName(original);
 
         if (this.noComponents !== expectedNoComponents) {
-            this.reset(original, originalNoComponents);
+            //this.reset(original, originalNoComponents);
             MethodFailedException.assert(false, "Component validation failed");
         }
 
         for (let i_orig = 0, i_new = 0; i_orig < originalNoComponents; i_orig++, i_new++) {
             if (operationType === "insert" && i_orig === index) {
                 if (stringArrayName[i_new] !== component) {
-                    this.reset(original, originalNoComponents);
+                    //this.reset(original, originalNoComponents);
                     MethodFailedException.assert(false, "Insert component validation failed");
                 }
                 i_new++; // Springe in der neuen Liste weiter
@@ -164,17 +160,17 @@ export class StringName extends AbstractName {
                 i_orig++; // Überspringe den removed Index in der alten Liste
             } else if (operationType === "set" && i_orig === index) {
                 if (stringArrayName[i_new] !== component) {
-                    this.reset(original, originalNoComponents);
+                    //this.reset(original, originalNoComponents);
                     MethodFailedException.assert(false, "Set component validation failed");
                 }
             } else if (stringArrayName[i_new] !== origArrayName[i_orig]) {
-                this.reset(original, originalNoComponents);
+                //this.reset(original, originalNoComponents);
                 MethodFailedException.assert(false, `Component mismatch after ${operationType}`);
             }
         }
 
         if (operationType === "append" && stringArrayName[originalNoComponents] !== component) {
-            this.reset(original, originalNoComponents);
+            //this.reset(original, originalNoComponents);
             MethodFailedException.assert(false, "Append component validation failed");
         }
     }
