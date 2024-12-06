@@ -18,15 +18,10 @@ export abstract class AbstractName implements Name {
   }
 
   public clone(): Name {
-    const cloned = Object.create(Object.getPrototypeOf(this));
-    cloned.delimiter = this.getDelimiterCharacter();
+    let clone = Object.create(this);
 
-    for (let i = 0; i < this.getNoComponents(); i++) {
-      cloned.append(this.getComponent(i));
-    }
-
-    this.assertIsValidCloned(cloned);
-    return cloned;
+    this.assertIsValidCloned(clone);
+    return clone;
   }
 
   public asString(delimiter?: string): string {
@@ -71,7 +66,6 @@ export abstract class AbstractName implements Name {
   public isEqual(other: Name): boolean {
     this.assertHasValidParameter(other, "other cannot be null or undefined");
     if (this.getNoComponents() !== other.getNoComponents()) return false;
-
     for (let i = 0; i < this.getNoComponents(); i++) {
       if (this.getComponent(i) !== other.getComponent(i)) return false;
     }
@@ -101,29 +95,25 @@ export abstract class AbstractName implements Name {
   abstract getNoComponents(): number;
 
   abstract getComponent(i: number): string;
-  abstract setComponent(i: number, c: string): void;
+  abstract setComponent(i: number, c: string): Name;
 
-  abstract insert(i: number, c: string): void;
-  abstract append(c: string): void;
-  abstract remove(i: number): void;
+  abstract insert(i: number, c: string): Name;
+  abstract append(c: string): Name;
+  abstract remove(i: number): Name;
 
-  public concat(other: Name): void {
+  public concat(other: Name): Name {
     this.assertHasValidParameter(other, "other cannot be null or undefined");
+
     if (other.getDelimiterCharacter() !== this.getDelimiterCharacter()) {
       throw new Error("Delimiters do not match");
     }
 
-    let copy = Object.create(Object.getPrototypeOf(this));
-    copy.delimiter = this.getDelimiterCharacter();
+    let clone = this.clone();
     for (let i = 0; i < this.getNoComponents(); i++) {
-      copy.append(this.getComponent(i));
+      clone.append(other.getComponent(i));
     }
 
-    for (let i = 0; i <= other.getNoComponents(); ++i) {
-      this.append(other.getComponent(i));
-    }
-
-    this.assertIsValidConcatComponent(copy, other);
+    return clone;
   }
 
   // methods for assertions (preconditions)
