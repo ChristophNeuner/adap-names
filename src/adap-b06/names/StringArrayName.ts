@@ -48,42 +48,50 @@ export class StringArrayName extends AbstractName {
     return this.components[i];
   }
 
-  public setComponent(i: number, c: string) {
+  public setComponent(i: number, c: string): Name {
     this.assertHasValidIndex(i);
     this.assertHasValidParameter(c);
 
-    const original = [...this.components];
-    this.components[i] = c;
+    let deepCopiedComponents = structuredClone(this.components);
+    deepCopiedComponents[i] = c;
+    let result = new StringArrayName(deepCopiedComponents, this.getDelimiterCharacter());
 
-    this.assertIsValidComponent("set", c, i, original, original.length);
+    result.assertIsValidComponent("set", c, i, this.components, this.getNoComponents());
+    return result;
   }
 
-  public insert(i: number, c: string) {
+  public insert(i: number, c: string): Name {
     this.assertHasValidIndexForInsert(i);
     this.assertHasValidParameter(c);
 
-    const original = [...this.components];
-    this.components.splice(i, 0, c);
+    let deepCopiedComponents = structuredClone(this.components);
+    deepCopiedComponents.splice(i, 0, c);
+    let result = new StringArrayName(deepCopiedComponents, this.getDelimiterCharacter());
 
-    this.assertIsValidComponent("insert", c, i, original, original.length);
+    result.assertIsValidComponent("insert", c, i, this.components, this.getNoComponents());
+    return result;
   }
 
   public append(c: string) {
     this.assertHasValidParameter(c);
 
-    const original = [...this.components];
-    this.components.push(c);
+    let deepCopiedComponents = structuredClone(this.components);
+    deepCopiedComponents.push(c);
+    let result = new StringArrayName(deepCopiedComponents, this.getDelimiterCharacter());
 
-    this.assertIsValidComponent("append", c, null, original, original.length);
+    result.assertIsValidComponent("append", c, null, this.components, this.getNoComponents());
+    return result;
   }
 
   public remove(i: number) {
     this.assertHasValidIndex(i);
 
-    const original = [...this.components];
-    this.components.splice(i, 1);
+    let deepCopiedComponents = structuredClone(this.components);
+    deepCopiedComponents.splice(i, 1);
+    let result = new StringArrayName(deepCopiedComponents, this.getDelimiterCharacter());
 
-    this.assertIsValidComponent("remove", null, i, original, original.length);
+    result.assertIsValidComponent("remove", null, i, this.components, this.getNoComponents());
+    return result;
   }
 
   // methods for assertions (preconditions)
@@ -120,32 +128,32 @@ export class StringArrayName extends AbstractName {
         : originalNoComponents;
 
     if (this.getNoComponents() !== expectedNoComponents) {
-      this.components = [...originalComponents];
+      //this.components = [...originalComponents];
       MethodFailedException.assert(false, `Component operation "${operationType}" failed: Invalid component count`);
     }
 
     for (let i_orig = 0, i_new = 0; i_orig < originalNoComponents; i_orig++, i_new++) {
       if (operationType === "insert" && i_orig === index) {
         if (this.components[i_new] !== component) {
-          this.components = [...originalComponents];
+          //this.components = [...originalComponents];
           MethodFailedException.assert(false, "Insert validation failed");
         }
-        i_new++; // Springe in der neuen Liste wetier
+        i_new++; // Springe in der neuen Liste weiter
       } else if (operationType === "remove" && i_orig === index) {
-        i_orig++; // Überspringe den removed Index ind er alten Liste
+        i_orig++; // Überspringe den removed Index in der alten Liste
       } else if (operationType === "set" && i_orig === index) {
         if (this.components[i_new] !== component) {
-            this.components = [...originalComponents];
+            //this.components = [...originalComponents];
             MethodFailedException.assert(false, "Set validation failed");
         }
       } else if (this.components[i_new] !== originalComponents[i_orig]) {
-        this.components = [...originalComponents];
+        //this.components = [...originalComponents];
         MethodFailedException.assert(false, `Component operation "${operationType}" failed: Component mismatch`);
       }
     }
 
     if (operationType === "append" && this.components[originalNoComponents] !== component) {
-      this.components = [...originalComponents];
+      //this.components = [...originalComponents];
       MethodFailedException.assert(false, "Append validation failed");
     }
   }
