@@ -108,11 +108,12 @@ export abstract class AbstractName implements Name {
       throw new Error("Delimiters do not match");
     }
 
-    let clone = this.clone();
+    let clone = this.clone() as AbstractName;
     for (let i = 0; i < this.getNoComponents(); i++) {
       clone.append(other.getComponent(i));
     }
 
+    clone.assertIsValidConcatComponent(this, other);
     return clone;
   }
 
@@ -159,10 +160,10 @@ export abstract class AbstractName implements Name {
     MethodFailedException.assert(cond, "HashCode validation failed");
   }
 
-  protected assertIsValidConcatComponent(copy: Name, other: Name): void {
+  protected assertIsValidConcatComponent(original: Name, other: Name): void {
     const cond =
       this.getNoComponents() ===
-      copy.getNoComponents() + other.getNoComponents();
+      original.getNoComponents() + other.getNoComponents();
     MethodFailedException.assert(
       cond,
       "Concat Components validation failed"
