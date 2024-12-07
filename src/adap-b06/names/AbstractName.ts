@@ -100,22 +100,7 @@ export abstract class AbstractName implements Name {
   abstract insert(i: number, c: string): Name;
   abstract append(c: string): Name;
   abstract remove(i: number): Name;
-
-  public concat(other: Name): Name {
-    this.assertHasValidParameter(other, "other cannot be null or undefined");
-
-    if (other.getDelimiterCharacter() !== this.getDelimiterCharacter()) {
-      throw new Error("Delimiters do not match");
-    }
-
-    let clone = this.clone() as AbstractName;
-    for (let i = 0; i < this.getNoComponents(); i++) {
-      clone.append(other.getComponent(i));
-    }
-
-    clone.assertIsValidConcatComponent(this, other);
-    return clone;
-  }
+  abstract concat(other: Name): Name;
 
   // methods for assertions (preconditions)
   protected isNotNullOrUndefined(o: Object | null): boolean {
@@ -161,11 +146,14 @@ export abstract class AbstractName implements Name {
   }
 
   protected assertIsValidConcatComponent(original: Name, other: Name): void {
-    const cond =
-      this.getNoComponents() ===
-      original.getNoComponents() + other.getNoComponents();
+    console.log('original.asString():', original.asString());
+    console.log('original.getNoComponents():', original.getNoComponents());
+    console.log('other.asString():', other.asString());
+    console.log('other.getNoComponents():', other.getNoComponents());
+    console.log('this.asString():', this.asString());
+    console.log('this.getNoComponents():', this.getNoComponents());
     MethodFailedException.assert(
-      cond,
+      this.getNoComponents() === original.getNoComponents() + other.getNoComponents(),
       "Concat Components validation failed"
     );
   }

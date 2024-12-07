@@ -99,6 +99,24 @@ export class StringName extends AbstractName {
         return result;
     }
 
+    public concat(other: Name): Name {
+        this.assertHasValidParameter(other, "other cannot be null or undefined");
+    
+        if (other.getDelimiterCharacter() !== this.getDelimiterCharacter()) {
+          throw new Error("Delimiters do not match");
+        }
+    
+        let components = this.asStringArrayName();
+        for (let i = 0; i < other.getNoComponents(); i++) {
+          components.push(structuredClone(other.getComponent(i)));
+        }
+        let result = new StringName(this.asStringName(components), this.getDelimiterCharacter());
+    
+        result.assertIsValidConcatComponent(this, other);
+        return result;
+      }
+
+
     protected splitComponents(str: string, delimiter: string = this.getDelimiterCharacter()): string[] {
         const regex = this.createRegexForDelimiter(delimiter);
         return str.split(regex);

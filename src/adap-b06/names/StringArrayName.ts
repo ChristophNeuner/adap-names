@@ -72,7 +72,7 @@ export class StringArrayName extends AbstractName {
     return result;
   }
 
-  public append(c: string) {
+  public append(c: string): Name {
     this.assertHasValidParameter(c);
 
     let deepCopiedComponents = structuredClone(this.components);
@@ -83,7 +83,7 @@ export class StringArrayName extends AbstractName {
     return result;
   }
 
-  public remove(i: number) {
+  public remove(i: number):Name {
     this.assertHasValidIndex(i);
 
     let deepCopiedComponents = structuredClone(this.components);
@@ -91,6 +91,23 @@ export class StringArrayName extends AbstractName {
     let result = new StringArrayName(deepCopiedComponents, this.getDelimiterCharacter());
 
     result.assertIsValidComponent("remove", null, i, this.components, this.getNoComponents());
+    return result;
+  }
+
+  public concat(other: Name): Name {
+    this.assertHasValidParameter(other, "other cannot be null or undefined");
+
+    if (other.getDelimiterCharacter() !== this.getDelimiterCharacter()) {
+      throw new Error("Delimiters do not match");
+    }
+
+    let componentsDeepCopy = structuredClone(this.components);
+    for (let i = 0; i < other.getNoComponents(); i++) {
+      componentsDeepCopy.push(structuredClone(other.getComponent(i)));
+    }
+    let result = new StringArrayName(componentsDeepCopy, this.getDelimiterCharacter());
+
+    result.assertIsValidConcatComponent(this, other);
     return result;
   }
 
