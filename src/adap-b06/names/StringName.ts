@@ -53,27 +53,26 @@ export class StringName extends AbstractName {
         this.assertHasValidIndex(i);
         this.assertHasValidParameter(c);
 
-        let deepCopy = structuredClone(this);
-        let deepCopyComponents = deepCopy.asStringArrayName();
+        let deepCopyString = structuredClone(this.name);
+        let deepCopyComponents = this.asStringArrayName(deepCopyString);
         deepCopyComponents[i] = c;
-        deepCopy.name = deepCopy.asStringName(deepCopyComponents); 
+        let result = new StringName(this.asStringName(deepCopyComponents), this.getDelimiterCharacter());
 
-        deepCopy.assertIsValidComponent("set", c, i, this.name, this.getNoComponents());
-        return deepCopy;
+        result.assertIsValidComponent("set", c, i, this.name, this.getNoComponents());
+        return result;
     }
 
     public insert(i: number, c: string): Name {
         this.assertHasValidIndex(i);
         this.assertHasValidParameter(c);
 
-        let deepCopy = structuredClone(this);
-        let deepCopyComponents = deepCopy.asStringArrayName();
+        let deepCopyString = structuredClone(this.name);
+        let deepCopyComponents = this.asStringArrayName(deepCopyString);
         deepCopyComponents.splice(i, 0, c);
-        deepCopy.name = this.asStringName(deepCopyComponents);
-        deepCopy.noComponents += 1;
+        let result = new StringName(this.asStringName(deepCopyComponents), this.getDelimiterCharacter());
 
-        deepCopy.assertIsValidComponent("insert", c, i, this.name, this.getNoComponents());
-        return deepCopy;
+        result.assertIsValidComponent("insert", c, i, this.name, this.getNoComponents());
+        return result;
     }
 
     public append(c: string): Name {
